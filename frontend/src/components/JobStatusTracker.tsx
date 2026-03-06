@@ -74,10 +74,10 @@ export const JobStatusTracker: React.FC<JobStatusTrackerProps> = ({ activeJobs, 
                         key={jobId}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className={`p-4 rounded-xl border backdrop-blur-sm shadow-sm transition-all
-              ${isComplete ? 'bg-green-50/50 border-green-200' :
-                                isFailed ? 'bg-red-50/50 border-red-200' :
-                                    'bg-white/40 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700'}`}
+                        className={`p-4 rounded-xl border shadow-sm transition-all
+              ${isComplete ? 'bg-emerald-50 border-emerald-200' :
+                                isFailed ? 'bg-red-50 border-red-200' :
+                                    'bg-white border-slate-200'}`}
                     >
                         <div className="flex items-start justify-between">
                             <div className="flex items-center space-x-3">
@@ -90,10 +90,10 @@ export const JobStatusTracker: React.FC<JobStatusTrackerProps> = ({ activeJobs, 
                                 )}
 
                                 <div>
-                                    <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                    <h4 className="text-sm font-bold text-slate-900">
                                         {job ? job.jobName : `Queueing Job #${jobId}`}
                                     </h4>
-                                    <p className="text-xs text-slate-500 font-mono mt-1">
+                                    <p className="text-xs text-slate-500 font-mono mt-1 font-medium">
                                         Job Execution ID: {jobId}
                                     </p>
 
@@ -119,9 +119,9 @@ export const JobStatusTracker: React.FC<JobStatusTrackerProps> = ({ activeJobs, 
                         </div>
 
                         {(isRunning || isPending) && (
-                            <div className="mt-4 w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                            <div className="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                                 <motion.div
-                                    className="bg-blue-500 h-1.5 rounded-full"
+                                    className="bg-blue-600 h-1.5 rounded-full"
                                     initial={{ width: "0%" }}
                                     animate={{ width: "100%" }}
                                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}

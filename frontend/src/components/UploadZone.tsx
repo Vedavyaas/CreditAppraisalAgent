@@ -84,8 +84,8 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ applicationId, onUploadS
             <div
                 className={`flex-1 relative rounded-xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center p-6 text-center
           ${isDragging
-                        ? 'border-blue-400 bg-blue-50/10 dark:bg-blue-900/20'
-                        : 'border-slate-300 dark:border-slate-600 bg-white/20 hover:bg-white/30 dark:bg-black/20 dark:hover:bg-black/30'
+                        ? 'border-blue-400 bg-blue-50'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
                     }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -109,11 +109,11 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ applicationId, onUploadS
                             exit={{ opacity: 0, scale: 0.9 }}
                             className="flex flex-col items-center pointer-events-none"
                         >
-                            <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center mb-4 text-blue-500">
+                            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4 text-blue-600 shadow-sm">
                                 <UploadCloud className="w-8 h-8" />
                             </div>
-                            <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200">Drag & Drop Documents</h3>
-                            <p className="text-sm text-slate-500 mt-2 max-w-xs">Supports GST Returns (.csv), Bank Statements (.csv), and Legal/Annual Reports (.pdf)</p>
+                            <h3 className="text-xl font-bold text-slate-900 tracking-tight">Drag & Drop Documents</h3>
+                            <p className="text-sm font-medium text-slate-500 mt-2 max-w-xs">Supports GST Returns (.csv), Bank Statements (.csv), and Legal/Annual Reports (.pdf)</p>
                         </motion.div>
                     )}
 
@@ -125,16 +125,16 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ applicationId, onUploadS
                             exit={{ opacity: 0, y: -10 }}
                             className="flex flex-col items-center w-full"
                         >
-                            <FileText className="w-12 h-12 text-slate-600 dark:text-slate-400 mb-3" />
-                            <p className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">{file.name}</p>
-                            <p className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <FileText className="w-12 h-12 text-blue-500 mb-3" />
+                            <p className="font-semibold text-slate-900 truncate max-w-[200px]">{file.name}</p>
+                            <p className="text-xs font-medium text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
 
                             <div className="mt-6 w-full max-w-xs space-y-3" onClick={(e) => e.stopPropagation()}>
-                                <label className="block text-left text-xs font-semibold uppercase text-slate-500">Document Type</label>
+                                <label className="block text-left text-xs font-bold tracking-wider uppercase text-slate-500">Document Type</label>
                                 <select
                                     value={docType}
                                     onChange={(e) => setDocType(e.target.value)}
-                                    className="w-full p-2.5 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm shadow-sm backdrop-blur-sm"
+                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 font-medium shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                                 >
                                     <option value="GST_RETURN">GST Return (CSV)</option>
                                     <option value="BANK_STATEMENT">Bank Statement (CSV)</option>
@@ -145,10 +145,10 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ applicationId, onUploadS
                                 </select>
 
                                 <div className="flex space-x-2 pt-2">
-                                    <button onClick={resetState} className="flex-1 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-medium text-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                                    <button onClick={resetState} className="flex-1 py-2 bg-slate-100 border border-slate-200 text-slate-700 rounded-lg font-medium text-sm hover:bg-slate-200 transition-colors shadow-sm">
                                         Cancel
                                     </button>
-                                    <button onClick={handleUpload} className="flex-1 py-2 bg-blue-500 text-white rounded-lg font-medium text-sm hover:bg-blue-600 transition-colors shadow-sm">
+                                    <button onClick={handleUpload} className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors shadow-sm">
                                         Upload
                                     </button>
                                 </div>
@@ -158,25 +158,25 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ applicationId, onUploadS
 
                     {status === 'UPLOADING' && (
                         <motion.div key="uploading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center">
-                            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-                            <p className="font-medium text-slate-700 dark:text-slate-200">Starting Ingestion Pipeline...</p>
+                            <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+                            <p className="font-bold text-slate-900">Starting Ingestion Pipeline...</p>
                         </motion.div>
                     )}
 
                     {status === 'SUCCESS' && (
                         <motion.div key="success" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center">
                             <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-white">Upload Successful</h3>
-                            <p className="text-sm text-slate-500 mt-2">Job dispatched to Spring Batch.</p>
+                            <h3 className="text-xl font-bold text-slate-900">Upload Successful</h3>
+                            <p className="text-sm font-medium text-slate-500 mt-2">Job dispatched to Spring Batch.</p>
                         </motion.div>
                     )}
 
                     {status === 'ERROR' && (
                         <motion.div key="error" initial={{ y: 5, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center">
                             <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-                            <h3 className="text-lg font-bold text-red-600">Ingestion Failed</h3>
-                            <p className="text-sm text-slate-600 mt-2 max-w-xs">{errorMessage}</p>
-                            <button onClick={resetState} className="mt-4 px-4 py-2 bg-white/50 border border-slate-200 rounded-lg text-sm font-medium hover:bg-white/80 transition-colors">
+                            <h3 className="text-lg font-bold text-red-700">Ingestion Failed</h3>
+                            <p className="text-sm font-medium text-slate-600 mt-2 max-w-xs">{errorMessage}</p>
+                            <button onClick={resetState} className="mt-4 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
                                 Try Again
                             </button>
                         </motion.div>

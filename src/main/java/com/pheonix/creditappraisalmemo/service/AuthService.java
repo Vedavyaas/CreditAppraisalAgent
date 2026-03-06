@@ -45,7 +45,14 @@ public class AuthService {
         UserDetailsEntity user = new UserDetailsEntity(
                 request.name(), request.email(), passwordEncoder.encode(request.password()), role);
         userRepo.save(user);
-        return new AuthResponse(mintToken(user.getEmail(), role.name()), "Account created successfully.");
+        return new AuthResponse(
+            mintToken(user.getEmail(), role.name()), 
+            "Account created successfully.",
+            user.getId(),
+            user.getEmail(),
+            user.getName(),
+            user.getRole().name()
+        );
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -53,7 +60,14 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         UserDetailsEntity user = userRepo.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("User not found."));
-        return new AuthResponse(mintToken(auth.getName(), user.getRole().name()), "Login successful.");
+        return new AuthResponse(
+            mintToken(auth.getName(), user.getRole().name()), 
+            "Login successful.",
+            user.getId(),
+            user.getEmail(),
+            user.getName(),
+            user.getRole().name()
+        );
     }
     public AuthResponse sendLoginOtp(LoginRequest request) {
         authenticationManager.authenticate(
@@ -68,7 +82,14 @@ public class AuthService {
         }
         UserDetailsEntity user = userRepo.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("User not found."));
-        return new AuthResponse(mintToken(user.getEmail(), user.getRole().name()), "OTP verified. Login successful.");
+        return new AuthResponse(
+            mintToken(user.getEmail(), user.getRole().name()), 
+            "OTP verified. Login successful.",
+            user.getId(),
+            user.getEmail(),
+            user.getName(),
+            user.getRole().name()
+        );
     }
 
     public AuthResponse sendForgotPasswordOtp(SendOtpRequest request) {

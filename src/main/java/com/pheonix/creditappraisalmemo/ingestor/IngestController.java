@@ -56,7 +56,7 @@ public class IngestController {
         Files.createDirectories(dir);
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         Path filePath = dir.resolve(fileName);
-        file.transferTo(filePath.toFile());
+        file.transferTo(filePath.toAbsolutePath().toFile());
 
         // 2. Create Document record
         Document doc = new Document();
