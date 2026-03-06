@@ -6,7 +6,7 @@ import com.pheonix.creditappraisalmemo.ingestor.gst.*;
 import com.pheonix.creditappraisalmemo.ingestor.pdf.*;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.step.Step;
-import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -56,7 +56,7 @@ public class IngestJobConfig {
     }
 
     @Bean
-    @StepScope
+    @JobScope
     public Step gstIngestionStep(
             @Value("#{jobParameters['filePath']}") String filePath,
             @Value("#{jobParameters['applicationId']}") Long applicationId) {
@@ -82,7 +82,7 @@ public class IngestJobConfig {
     }
 
     @Bean
-    @StepScope
+    @JobScope
     public Step bankIngestionStep(
             @Value("#{jobParameters['filePath']}") String filePath,
             @Value("#{jobParameters['applicationId']}") Long applicationId) {
@@ -108,7 +108,7 @@ public class IngestJobConfig {
     }
 
     @Bean
-    @StepScope
+    @JobScope
     public Step pdfExtractionStep(
             @Value("#{jobParameters['applicationId']}") Long applicationId) {
         return new StepBuilder("pdfExtractionStep", jobRepository)
