@@ -8,12 +8,14 @@ import java.math.RoundingMode;
 
 public class GstItemProcessor implements ItemProcessor<GstRowDto, GstEntry> {
 
-    private static final BigDecimal CIRCULAR_TRADE_THRESHOLD = new BigDecimal("0.15");
+    /** Injected from RulesService at job-launch time — Admin can change it in the DB. */
+    private final BigDecimal circularTradeThreshold;
 
     private final Long applicationId;
 
-    public GstItemProcessor(Long applicationId) {
+    public GstItemProcessor(Long applicationId, double thresholdFromDb) {
         this.applicationId = applicationId;
+        this.circularTradeThreshold = BigDecimal.valueOf(thresholdFromDb);
     }
 
     @Override
@@ -31,11 +33,11 @@ public class GstItemProcessor implements ItemProcessor<GstRowDto, GstEntry> {
         BigDecimal diff = gstr3b.subtract(gstr2a).abs();
         entry.setDifference(diff);
 
-        // Flag circular trading if discrepancy > 15% of GSTR-3B turnover
+        // Flag circular trading if discrepancy exceeds the admin-configured threshold
         boolean flagged = false;
         if (gstr3b.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discrepancyRatio = diff.divide(gstr3b, 4, RoundingMode.HALF_UP);
-            flagged = discrepancyRatio.compareTo(CIRCULAR_TRADE_THRESHOLD) > 0;
+            flagged = discrepancyRatio.compareTo(circularTradeThreshold) > 0;
         }
         entry.setCircularTradingFlag(flagged);
 

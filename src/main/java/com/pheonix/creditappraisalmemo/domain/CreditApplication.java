@@ -24,6 +24,12 @@ public class CreditApplication {
     private ApplicationStatus status = ApplicationStatus.DRAFT;
 
     @Column(nullable = false)
+    private Double requestedAmount = 0.0;
+
+    private String complianceStatus = "PENDING"; // PENDING, FLAGGED, CLEARED, HOLD
+    private String riskBand = "MEDIUM";        // LOW, MEDIUM, HIGH (populated by ML)
+
+    @Column(nullable = false)
     private String createdBy;      // email of the Credit Officer
 
     private LocalDateTime createdAt;
@@ -37,7 +43,7 @@ public class CreditApplication {
     }
 
     public enum ApplicationStatus {
-        DRAFT, IN_REVIEW, ANALYZING, DECIDED
+        DRAFT, IN_REVIEW, ANALYZING, PENDING_COMPLIANCE, PENDING_MANAGER, DECIDED, REJECTED, FRAUD_FLAGGED
     }
 
     @PrePersist
@@ -70,6 +76,15 @@ public class CreditApplication {
 
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+
+    public Double getRequestedAmount() { return requestedAmount; }
+    public void setRequestedAmount(Double requestedAmount) { this.requestedAmount = requestedAmount; }
+
+    public String getComplianceStatus() { return complianceStatus; }
+    public void setComplianceStatus(String complianceStatus) { this.complianceStatus = complianceStatus; }
+
+    public String getRiskBand() { return riskBand; }
+    public void setRiskBand(String riskBand) { this.riskBand = riskBand; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

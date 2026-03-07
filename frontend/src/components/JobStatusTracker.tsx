@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Clock, Database } from 'lucide-react';
 import apiClient from '../api/apiClient';
 
 interface JobStatus {
@@ -9,6 +9,10 @@ interface JobStatus {
     status: string;
     exitCode: string;
     exitDescription: string;
+    readCount: number;
+    writeCount: number;
+    filterCount: number;
+    skipCount: number;
     startTime: string;
     endTime: string;
 }
@@ -69,6 +73,13 @@ export const JobStatusTracker: React.FC<JobStatusTrackerProps> = ({ activeJobs, 
                 const isComplete = job?.status === 'COMPLETED';
                 const isFailed = job?.status === 'FAILED';
 
+                // Human-readable job name
+                const displayName = job?.jobName
+                    ?.replace('gstIngestionJob', 'GST Return Ingestion')
+                    ?.replace('bankIngestionJob', 'Bank Statement Ingestion')
+                    ?.replace('pdfExtractionJob', 'PDF Document Extraction')
+                    ?? `Job #${jobId}`;
+
                 return (
                     <motion.div
                         key={jobId}
@@ -91,19 +102,29 @@ export const JobStatusTracker: React.FC<JobStatusTrackerProps> = ({ activeJobs, 
 
                                 <div>
                                     <h4 className="text-sm font-bold text-slate-900">
-                                        {job ? job.jobName : `Queueing Job #${jobId}`}
+                                        {isPending ? `Queueing Job #${jobId}` : displayName}
                                     </h4>
                                     <p className="text-xs text-slate-500 font-mono mt-1 font-medium">
                                         Job Execution ID: {jobId}
                                     </p>
 
+                                    {/* Show actual failure reason, not Spring Batch internal text */}
                                     {isFailed && job?.exitDescription && (
                                         <p className="text-xs text-red-600 mt-2 bg-red-100/50 p-2 rounded">
                                             {job.exitDescription}
                                         </p>
                                     )}
+
+                                    {/* Show clean record counts on success */}
                                     {isComplete && (
-                                        <p className="text-xs text-green-600 mt-1 font-medium">Successfully processed and saved to database.</p>
+                                        <div className="flex items-center space-x-2 mt-2">
+                                            <Database className="w-3.5 h-3.5 text-green-600" />
+                                            <p className="text-xs text-green-700 font-semibold">
+                                                {job.writeCount} record{job.writeCount !== 1 ? 's' : ''} ingested
+                                                {job.filterCount > 0 && `, ${job.filterCount} filtered`}
+                                                {job.skipCount > 0 && `, ${job.skipCount} skipped`}
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             </div>

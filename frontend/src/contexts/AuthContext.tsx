@@ -9,6 +9,11 @@ interface AuthContextType {
     logout: () => void;
     isAuthenticated: boolean;
     isAdmin: boolean;
+    isCreditOfficer: boolean;
+    isRiskAnalyst: boolean;
+    isCreditManager: boolean;
+    isComplianceOfficer: boolean;
+    isViewer: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,9 +55,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const isAuthenticated = !!token;
     const isAdmin = user?.role === 'ADMIN';
+    const isCreditOfficer = user?.role === 'CREDIT_OFFICER';
+    const isRiskAnalyst = user?.role === 'RISK_ANALYST';
+    const isCreditManager = user?.role === 'CREDIT_MANAGER';
+    const isComplianceOfficer = user?.role === 'COMPLIANCE_OFFICER';
+    const isViewer = user?.role === 'VIEWER';
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated, isAdmin }}>
+        <AuthContext.Provider value={{
+            user, token, login, logout,
+            isAuthenticated, isAdmin, isCreditOfficer,
+            isRiskAnalyst, isCreditManager, isComplianceOfficer, isViewer
+        }}>
             {children}
         </AuthContext.Provider>
     );

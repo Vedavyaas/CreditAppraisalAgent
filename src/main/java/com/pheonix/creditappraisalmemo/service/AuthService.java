@@ -1,5 +1,6 @@
 package com.pheonix.creditappraisalmemo.service;
 
+import com.pheonix.creditappraisalmemo.aspect.AuditAction;
 import com.pheonix.creditappraisalmemo.assets.Role;
 import com.pheonix.creditappraisalmemo.dto.*;
 import com.pheonix.creditappraisalmemo.repository.UserDetailsEntity;
@@ -37,6 +38,7 @@ public class AuthService {
         this.otpService = otpService;
     }
 
+    @AuditAction("New user account registration")
     public AuthResponse register(RegisterRequest request) {
         if (userRepo.findByEmail(request.email()).isPresent()) {
             throw new IllegalArgumentException("An account with this email already exists.");
@@ -55,6 +57,7 @@ public class AuthService {
         );
     }
 
+    @AuditAction("System login attempt")
     public AuthResponse login(LoginRequest request) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
@@ -76,6 +79,7 @@ public class AuthService {
         return new AuthResponse(null, "OTP sent to " + request.email() + ". Please verify to complete login.");
     }
 
+    @AuditAction("MFA/OTP verification for login")
     public AuthResponse verifyLoginOtp(VerifyOtpRequest request) {
         if (!otpService.validate(request.email(), request.otp())) {
             throw new IllegalArgumentException("Invalid or expired OTP.");
@@ -120,5 +124,58 @@ public class AuthService {
                 .claim("role", role)
                 .build();
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
+
+    public java.util.List<UserDetailsEntity> getAllUsers() {
+        return userRepo.findAll();
+    }
+
+    public UserDetailsEntity toggleUserSuspension(Long userId) {
+        UserDetailsEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        // Prevent admin from suspending themselves
+        if (user.getRole() == com.pheonix.creditappraisalmemo.assets.Role.ADMIN) {
+            throw new RuntimeException("Cannot suspend an administrator account");
+        }
+        user.setSuspended(!user.isSuspended());
+        return userRepo.save(user);
+    }
+
+    public void deleteUser(Long userId) {
+        UserDetailsEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        // Prevent admin from deleting themselves
+        if (user.getRole() == com.pheonix.creditappraisalmemo.assets.Role.ADMIN) {
+            throw new RuntimeException("Cannot delete an administrator account");
+        }
+        userRepo.delete(user);
+    }
+
+    public UserDetailsEntity changeUserRole(Long userId, com.pheonix.creditappraisalmemo.assets.Role newRole) {
+        UserDetailsEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Prevent changing admin's own role to avoid lockout
+        if (user.getRole() == com.pheonix.creditappraisalmemo.assets.Role.ADMIN) {
+            throw new RuntimeException("Cannot modify the role of an administrator account");
+        }
+        
+        user.setRole(newRole);
+        return userRepo.save(user);
+    }
+
+    public UserDetailsEntity inviteUser(String name, String email, com.pheonix.creditappraisalmemo.assets.Role role) {
+        if (userRepo.findByEmail(email).isPresent()) {
+            throw new RuntimeException("User with this email already exists");
+        }
+        
+        UserDetailsEntity newUser = new UserDetailsEntity();
+        newUser.setName(name);
+        newUser.setEmail(email);
+        // Default password for invited users
+        newUser.setPassword(passwordEncoder.encode("password"));
+        newUser.setRole(role);
+        
+        return userRepo.save(newUser);
     }
 }

@@ -11,8 +11,9 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
-        // Do not attach token for auth routes to prevent 401 errors with stale tokens
-        if (token && config.headers && !config.url?.includes('/auth/')) {
+        // Do not attach token for auth routes to prevent 401 errors with stale tokens (except for /auth/users which requires auth)
+        const isPublicAuthRoute = config.url?.includes('/auth/') && !config.url?.includes('/auth/users');
+        if (token && config.headers && !isPublicAuthRoute) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

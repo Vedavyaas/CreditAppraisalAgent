@@ -66,9 +66,71 @@ public class UserController {
      * Step 2 — POST /auth/forgot-password/reset  →  { email, otp, newPassword }
      * Validates OTP and resets the password.
      */
+    /**
+     * Step 2 — POST /auth/forgot-password/reset  →  { email, otp, newPassword }
+     * Validates OTP and resets the password.
+     */
     @PostMapping("/forgot-password/reset")
     public ResponseEntity<AuthResponse> resetPassword(@RequestBody ResetPasswordRequest request) {
         VerifyOtpRequest otpRequest = new VerifyOtpRequest(request.email(), request.otp());
         return ResponseEntity.ok(authService.verifyOtpAndResetPassword(otpRequest, request.newPassword()));
+    }
+
+    // ── Admin Endpoints ───────────────────────────────────────────────────────
+
+    /**
+     * GET /auth/users
+     * Returns a list of all registered users. Only accessible by ADMIN.
+     */
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/users")
+    public ResponseEntity<java.util.List<com.pheonix.creditappraisalmemo.repository.UserDetailsEntity>> getAllUsers() {
+        return ResponseEntity.ok(authService.getAllUsers());
+    }
+
+    /**
+     * PUT /auth/users/{userId}/suspend
+     * Toggles the suspension status of a user. Accessible by ADMIN.
+     */
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/users/{userId}/suspend")
+    public ResponseEntity<com.pheonix.creditappraisalmemo.repository.UserDetailsEntity> toggleUserSuspension(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.toggleUserSuspension(userId));
+    }
+
+    /**
+     * DELETE /auth/users/{userId}
+     * Deletes a user permanently. Accessible by ADMIN.
+     */
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        authService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * PUT /auth/users/{userId}/role?role=NEW_ROLE
+     * Changes the role of a specific user.
+     */
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/users/{userId}/role")
+    public ResponseEntity<com.pheonix.creditappraisalmemo.repository.UserDetailsEntity> changeUserRole(
+            @PathVariable Long userId, 
+            @RequestParam com.pheonix.creditappraisalmemo.assets.Role role) {
+        return ResponseEntity.ok(authService.changeUserRole(userId, role));
+    }
+
+    public record InviteUserRequest(String name, String email, com.pheonix.creditappraisalmemo.assets.Role role) {}
+
+    /**
+     * POST /auth/users/invite
+     * Creates a new user with a default password from the Admin panel.
+     */
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/users/invite")
+    public ResponseEntity<com.pheonix.creditappraisalmemo.repository.UserDetailsEntity> inviteUser(
+            @RequestBody InviteUserRequest request) {
+        return ResponseEntity.ok(authService.inviteUser(request.name(), request.email(), request.role()));
     }
 }

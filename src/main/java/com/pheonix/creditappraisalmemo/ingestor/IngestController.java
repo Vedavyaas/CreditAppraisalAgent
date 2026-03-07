@@ -1,5 +1,6 @@
 package com.pheonix.creditappraisalmemo.ingestor;
 
+import com.pheonix.creditappraisalmemo.aspect.AuditAction;
 import com.pheonix.creditappraisalmemo.domain.Document;
 import com.pheonix.creditappraisalmemo.domain.DocumentRepository;
 import org.springframework.batch.core.repository.explore.JobExplorer;
@@ -35,16 +36,7 @@ public class IngestController {
         this.jobExplorer = jobExplorer;
     }
 
-    /**
-     * POST /api/ingest/{applicationId}/upload
-     *
-     * Upload a file (PDF, CSV) for a given application.
-     * Body: multipart/form-data with fields:
-     *   - file: the binary file
-     *   - type: DocumentType enum value (e.g. GST_RETURN, BANK_STATEMENT, ANNUAL_REPORT)
-     *
-     * Returns the jobExecutionId for polling.
-     */
+    @AuditAction("Uploaded new source document for ingestion")
     @PostMapping("/{applicationId}/upload")
     public ResponseEntity<Map<String, Object>> upload(
             @PathVariable Long applicationId,
@@ -90,22 +82,38 @@ public class IngestController {
         return ResponseEntity.ok(successBody);
     }
 
-    /**
-     * GET /api/ingest/jobs/{jobExecutionId}/status
-     * Poll Spring Batch JobRepository for the current execution state.
-     */
+    @AuditAction("Requested live status of ingestion batch job")
     @GetMapping("/jobs/{jobExecutionId}/status")
     public ResponseEntity<Map<String, Object>> jobStatus(@PathVariable Long jobExecutionId) {
         var execution = jobExplorer.getJobExecution(jobExecutionId);
         if (execution == null) {
             return ResponseEntity.notFound().build();
         }
+
+        // Aggregate step-level read/write counts across all steps
+        long totalRead = 0, totalWrite = 0, totalFilter = 0, totalSkip = 0;
+        String failureMessage = null;
+        for (var step : execution.getStepExecutions()) {
+            totalRead   += step.getReadCount();
+            totalWrite  += step.getWriteCount();
+            totalFilter += step.getFilterCount();
+            totalSkip   += step.getSkipCount();
+            if (failureMessage == null && !step.getFailureExceptions().isEmpty()) {
+                failureMessage = step.getFailureExceptions().get(0).getMessage();
+            }
+        }
+
         Map<String, Object> statusBody = new java.util.HashMap<>();
         statusBody.put("jobExecutionId", jobExecutionId);
         statusBody.put("jobName", execution.getJobInstance().getJobName());
         statusBody.put("status", execution.getStatus().name());
         statusBody.put("exitCode", execution.getExitStatus().getExitCode());
-        statusBody.put("exitDescription", execution.getExitStatus().getExitDescription());
+        // Return a human-readable summary instead of the raw internal exitDescription
+        statusBody.put("exitDescription", failureMessage != null ? failureMessage : "");
+        statusBody.put("readCount",   totalRead);
+        statusBody.put("writeCount",  totalWrite);
+        statusBody.put("filterCount", totalFilter);
+        statusBody.put("skipCount",   totalSkip);
         statusBody.put("startTime", String.valueOf(execution.getStartTime()));
         statusBody.put("endTime", String.valueOf(execution.getEndTime()));
         return ResponseEntity.ok(statusBody);

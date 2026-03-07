@@ -101,8 +101,39 @@ export const Login: React.FC = () => {
                         <Link to="/forgot-password" className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors block">
                             Forgot your password?
                         </Link>
+                        <Link to="/demo" className="text-xs font-black text-indigo-500 hover:text-indigo-400 transition-colors block pt-2 uppercase tracking-widest">
+                            🚀 View Hackathon Demo Guide
+                        </Link>
                     </div>
                 </form>
+
+                {/* Hackathon Demo Access */}
+                <div className="mt-8 pt-6 border-t border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-4">Hackathon Demo Access</p>
+                    <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { role: 'Credit Officer', email: 'credit@test.com', color: 'blue' },
+                            { role: 'Risk Analyst', email: 'analyst@test.com', color: 'indigo' },
+                            { role: 'Credit Manager', email: 'manager@test.com', color: 'violet' },
+                            { role: 'Compliance', email: 'compliance@test.com', color: 'rose' },
+                            { role: 'Viewer Hub', email: 'viewer@test.com', color: 'slate' },
+                            { role: 'System Admin', email: 'admin@test.com', color: 'emerald' },
+                        ].map((demo) => (
+                            <button
+                                key={demo.role}
+                                type="button"
+                                onClick={() => {
+                                    setEmail(demo.email);
+                                    setPassword('password');
+                                }}
+                                className={`p-2.5 rounded-xl border border-${demo.color}-100 bg-${demo.color}-50/50 hover:bg-${demo.color}-50 transition-all text-left group`}
+                            >
+                                <p className={`text-[10px] font-bold text-${demo.color}-600 uppercase tracking-tight`}>{demo.role}</p>
+                                <p className="text-[9px] text-slate-500 font-mono truncate">{demo.email}</p>
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </MacWindow>
         </div>
     );

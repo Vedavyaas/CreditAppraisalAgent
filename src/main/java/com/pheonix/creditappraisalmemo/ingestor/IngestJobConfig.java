@@ -4,6 +4,7 @@ import com.pheonix.creditappraisalmemo.domain.*;
 import com.pheonix.creditappraisalmemo.ingestor.bank.*;
 import com.pheonix.creditappraisalmemo.ingestor.gst.*;
 import com.pheonix.creditappraisalmemo.ingestor.pdf.*;
+import com.pheonix.creditappraisalmemo.service.RulesService;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;
@@ -33,17 +34,20 @@ public class IngestJobConfig {
     private final GstEntryRepository gstEntryRepository;
     private final BankTransactionRepository bankTransactionRepository;
     private final DocumentRepository documentRepository;
+    private final RulesService rulesService;
 
     public IngestJobConfig(JobRepository jobRepository,
                            PlatformTransactionManager txManager,
                            GstEntryRepository gstEntryRepository,
                            BankTransactionRepository bankTransactionRepository,
-                           DocumentRepository documentRepository) {
+                           DocumentRepository documentRepository,
+                           RulesService rulesService) {
         this.jobRepository = jobRepository;
         this.txManager = txManager;
         this.gstEntryRepository = gstEntryRepository;
         this.bankTransactionRepository = bankTransactionRepository;
         this.documentRepository = documentRepository;
+        this.rulesService = rulesService;
     }
 
     // ══════════════════ GST INGESTION JOB ════════════════════════════════════
@@ -61,10 +65,12 @@ public class IngestJobConfig {
             @Value("#{jobParameters['filePath']}") String filePath,
             @Value("#{jobParameters['applicationId']}") Long applicationId) {
         try {
+            // Read GST variance threshold live from DB so Admin changes take effect on next upload
+            double threshold = rulesService.getGstVarianceThreshold();
             return new StepBuilder("gstIngestionStep", jobRepository)
                     .<GstRowDto, GstEntry>chunk(CHUNK_SIZE, txManager)
                     .reader(new GstCsvReader(filePath))
-                    .processor(new GstItemProcessor(applicationId))
+                    .processor(new GstItemProcessor(applicationId, threshold))
                     .writer(new GstItemWriter(gstEntryRepository))
                     .build();
         } catch (Exception e) {

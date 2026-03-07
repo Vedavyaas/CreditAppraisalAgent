@@ -14,6 +14,9 @@ public class UserDetailsEntity {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean suspended = false;
 
     public UserDetailsEntity() {
     }
@@ -63,5 +66,13 @@ public class UserDetailsEntity {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public boolean isSuspended() {
+        return suspended;
+    }
+
+    public void setSuspended(boolean suspended) {
+        this.suspended = suspended;
     }
 }
