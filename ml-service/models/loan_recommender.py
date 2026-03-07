@@ -26,7 +26,7 @@ def _generate_loan_training_data(n: int = 2000):
 
         # Target formula
         base = avg_credit * 3
-        risk_factor = risk_score / 100
+        risk_factor = max(0.1, 1.0 - (risk_score / 100))
         variance_penalty = max(0, 1 - (gst_var / 50))
         suspicious_penalty = max(0, 1 - (suspicious / 30))
         loan = base * risk_factor * variance_penalty * suspicious_penalty
@@ -38,9 +38,9 @@ def _generate_loan_training_data(n: int = 2000):
 
 
 def _tenor(risk_score: float) -> int:
-    if risk_score >= 75:
+    if risk_score <= 25:
         return 60
-    elif risk_score >= 50:
+    elif risk_score <= 50:
         return 48
     else:
         return 36
@@ -78,9 +78,9 @@ class LoanRecommender:
         tenor = _tenor(risk_score)
         emi = _emi(loan, tenor)
 
-        if risk_score >= 75:
+        if risk_score <= 25:
             tier = "PRIME"
-        elif risk_score >= 50:
+        elif risk_score <= 50:
             tier = "STANDARD"
         else:
             tier = "RESTRICTED"

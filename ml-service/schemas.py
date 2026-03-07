@@ -125,3 +125,29 @@ class ResearchCrawlerResponse(BaseModel):
     rbi_note: str
     source: str
 
+
+# ── Persona Brain (Human-Centric AI) ─────────────────────────────────────────
+class PersonaAnalysisRequest(BaseModel):
+    application_id: int
+    company_name: str
+    requested_amount: float
+    # Results from other models to "synthesize" the human story
+    risk_score: float
+    fraud_probability: float
+    growth_rate: float
+    sentiment_score: float # from qualitative adjuster
+    cibil_score: int
+    litigation_count: int
+    sector_growth: float
+
+class PersonaAnalysisResponse(BaseModel):
+    application_id: int
+    archetype: str                 # "THE_METICULOUS_PLANNER", "THE_AGGRESSIVE_SCALER", etc.
+    human_narrative: str           # Psychological profile text
+    grit_score: float              # 0-100 (resilience)
+    intent_alignment: float        # 0-100 (truthfulness)
+    social_shadow: str             # "GLOWING", "NEUTRAL", "DIMMED"
+    human_verdict: str             # "TRUSTWORTHY", "CAUTIONARY", "SPECULATIVE"
+    risk_modifier: float           # Value to add/subtract from main ML risk score
+    limit_multiplier: float        # Multiplier constraint for final loan limit (e.g. 0.8)
+

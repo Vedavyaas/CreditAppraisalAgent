@@ -3,7 +3,8 @@ import { MacWindow } from '../components/MacWindow';
 import { useAuth } from '../contexts/AuthContext';
 import {
     LogOut, Activity, AlertTriangle, CheckCircle2, ShieldAlert,
-    Search, Newspaper, Scale, Globe2, BadgeAlert, TrendingDown, TrendingUp, Loader2, ChevronRight
+    Search, Newspaper, Scale, Globe2, BadgeAlert, TrendingDown, TrendingUp, Loader2, ChevronRight,
+    Brain, Fingerprint, HeartPulse
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
@@ -21,7 +22,7 @@ export const RiskAnalystDashboard: React.FC = () => {
     const [researchData, setResearchData] = useState<any>(null);
     const [selectedScore, setSelectedScore] = useState<any>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
-    const [activeTab, setActiveTab] = useState<'gst' | 'bank' | 'research' | 'ml'>('ml');
+    const [activeTab, setActiveTab] = useState<'gst' | 'bank' | 'research' | 'ml' | 'persona'>('persona');
 
     const loadAppDetails = useCallback(async (app: any) => {
         setLoadingDetails(true);
@@ -65,23 +66,156 @@ export const RiskAnalystDashboard: React.FC = () => {
     }, [loadAppDetails]);
 
     const TABS = [
+        { id: 'persona', label: '🧠 Persona Brain' },
         { id: 'ml', label: 'ML Signals' },
         { id: 'gst', label: 'GST Data' },
         { id: 'bank', label: 'Bank Data' },
         { id: 'research', label: '🔍 Research Agent' },
     ] as const;
+    const renderPersonaBrain = () => {
+        if (!mlPred || !mlPred.personaArchetype) return (
+            <div className="py-12 text-center text-slate-400">
+                <Brain className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+                <p>Run full analysis to synthesize Human Persona signals.</p>
+                <button
+                    onClick={async () => {
+                        setLoadingDetails(true);
+                        try {
+                            await apiClient.get(`/applications/${selectedApp.id}/automated-report`);
+                            await loadAppDetails(selectedApp);
+                        } catch (e) {
+                            console.error(e);
+                        } finally {
+                            setLoadingDetails(false);
+                        }
+                    }}
+                    className="mt-4 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow hover:bg-slate-700 transition"
+                >
+                    Synthesize Human Persona Now
+                </button>
+            </div>
+        );
+
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
+                            <Brain className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Persona Neural Network</h3>
+                            <p className="text-xs text-slate-500 font-medium mt-0.5">Deep behavioral footprint synthesis & constraints</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={async () => {
+                            setLoadingDetails(true);
+                            try {
+                                await apiClient.get(`/applications/${selectedApp.id}/automated-report`);
+                                await loadAppDetails(selectedApp);
+                            } catch (e) {
+                                console.error(e);
+                            } finally {
+                                setLoadingDetails(false);
+                            }
+                        }}
+                        className="px-5 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold shadow hover:bg-slate-700 transition"
+                    >
+                        Force Evaluation
+                    </button>
+                </div>
+
+                {/* Human Scores */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div className="flex justify-between items-center mb-4">
+                            <span className="p-2 bg-emerald-50 rounded-xl"><HeartPulse className="w-5 h-5 text-emerald-600" /></span>
+                            <span className="text-2xl font-black text-slate-800">{mlPred.personaGritScore}</span>
+                        </div>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Human Grit Score</p>
+                        <p className="text-[10px] text-slate-500 mt-1">Measures resilience & intent to stay in business during downturns.</p>
+                        <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3">
+                            <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${mlPred.personaGritScore}%` }}></div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div className="flex justify-between items-center mb-4">
+                            <span className="p-2 bg-amber-50 rounded-xl"><Fingerprint className="w-5 h-5 text-amber-600" /></span>
+                            <span className="text-2xl font-black text-slate-800">{mlPred.personaIntentAlignment}%</span>
+                        </div>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Intent Alignment</p>
+                        <p className="text-[10px] text-slate-500 mt-1">Convergence between stated needs and bank transaction history.</p>
+                        <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3">
+                            <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${mlPred.personaIntentAlignment}%` }}></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Neural Network Constraints */}
+                {(mlPred.personaLimitMultiplier !== undefined || mlPred.personaRiskModifier !== undefined) && (
+                    <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl relative overflow-hidden">
+                        <div className="absolute -right-10 -top-10 opacity-5">
+                            <Brain className="w-48 h-48" />
+                        </div>
+                        <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">🤖 Neural Network Constraints</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+                            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Limit Multiplier constraint</p>
+                                <div className="flex items-end space-x-2">
+                                    <span className={`text-3xl font-black ${(mlPred.personaLimitMultiplier ?? 1) < 1 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                        {mlPred.personaLimitMultiplier}x
+                                    </span>
+                                    <span className="text-xs text-slate-500 font-medium mb-1 drop-shadow-sm">modifier to max loan</span>
+                                </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Base Risk Score Modifier</p>
+                                <div className="flex items-end space-x-2">
+                                    <span className={`text-3xl font-black ${(mlPred.personaRiskModifier ?? 0) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                        {(mlPred.personaRiskModifier ?? 0) > 0 ? '+' : ''}{mlPred.personaRiskModifier}
+                                    </span>
+                                    <span className="text-xs text-slate-500 font-medium mb-1 drop-shadow-sm">points</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-4 leading-relaxed max-w-2xl font-medium">
+                            The Persona Neural Network has computed these constraints based on the borrower's psychological and behavioral footprint. These modifiers directly override and adjust the standard financial risk models calculated earlier.
+                        </p>
+                    </div>
+                )}
+
+                {/* Final Human Verdict */}
+                <div className={`p-4 rounded-2xl border flex items-center justify-between ${mlPred.personaVerdict === 'TRUSTWORTHY' ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
+                    <div className="flex items-center space-x-3">
+                        <ShieldAlert className={`w-6 h-6 ${mlPred.personaVerdict === 'TRUSTWORTHY' ? 'text-emerald-600' : 'text-amber-600'}`} />
+                        <div>
+                            <p className="text-xs font-black text-slate-400 uppercase">Strategic Human Verdict</p>
+                            <p className={`text-xl font-black ${mlPred.personaVerdict === 'TRUSTWORTHY' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                                {mlPred.personaVerdict}
+                            </p>
+                        </div>
+                    </div>
+                    <button className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-xs font-black hover:bg-slate-50 transition-colors">
+                        VIEW FULL PSYCH PROFILE
+                    </button>
+                </div>
+            </div>
+        );
+    };
 
     const renderMLSignals = () => (
         <div className="space-y-4">
             {mlPred ? (
                 <>
-                    {/* Scores */}
+                    {/* Neural Network Modified Scores (Sourced from DB) */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {[
-                            { label: 'Risk Score', val: `${mlPred.riskScore}/100`, color: mlPred.riskScore >= 70 ? 'emerald' : mlPred.riskScore >= 50 ? 'amber' : 'red' },
+                            { label: 'Constrained Risk', val: `${(mlPred.riskScore || 0).toFixed(1)}/100`, color: mlPred.riskScore >= 75 ? 'red' : mlPred.riskScore >= 40 ? 'amber' : 'emerald' },
                             { label: 'Decision', val: mlPred.decision, color: mlPred.decision === 'APPROVED' ? 'emerald' : mlPred.decision === 'REJECTED' ? 'red' : 'amber' },
                             { label: 'Fraud Risk', val: mlPred.fraudProbabilityPct, color: mlPred.isAnomalous ? 'red' : 'emerald' },
-                            { label: 'Confidence', val: `${(mlPred.riskConfidence * 100).toFixed(0)}%`, color: 'indigo' },
+                            { label: 'Confidence', val: `${((mlPred.riskConfidence || 0) * 100).toFixed(0)}%`, color: 'indigo' },
                         ].map(s => (
                             <div key={s.label} className={`p-4 rounded-xl border bg-${s.color}-50 border-${s.color}-200`}>
                                 <p className={`text-xs font-bold text-${s.color}-600 uppercase tracking-wider mb-1`}>{s.label}</p>
@@ -417,6 +551,7 @@ export const RiskAnalystDashboard: React.FC = () => {
 
                             <MacWindow title={TABS.find(t => t.id === activeTab)?.label ?? ''}>
                                 <div className="p-4">
+                                    {activeTab === 'persona' && renderPersonaBrain()}
                                     {activeTab === 'ml' && renderMLSignals()}
                                     {activeTab === 'gst' && renderGST()}
                                     {activeTab === 'bank' && renderBank()}

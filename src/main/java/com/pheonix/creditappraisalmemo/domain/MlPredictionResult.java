@@ -40,6 +40,18 @@ public class MlPredictionResult {
     private Double emiEstimate;
     private String recommendationTier; // PRIME / STANDARD / RESTRICTED
 
+    // 🧠 Persona Brain (Human-Centric Synthesis)
+    private String personaArchetype;
+    @Column(length = 2000)
+    private String personaNarrative;
+    private Double personaGritScore;
+    private Double personaIntentAlignment;
+    private String personaSocialShadow;
+    private String personaVerdict;
+
+    private Double personaRiskModifier;
+    private Double personaLimitMultiplier;
+
     private LocalDateTime computedAt;
 
     @PrePersist
@@ -78,5 +90,24 @@ public class MlPredictionResult {
     public void setEmiEstimate(Double v) { this.emiEstimate = v; }
     public String getRecommendationTier() { return recommendationTier; }
     public void setRecommendationTier(String v) { this.recommendationTier = v; }
+
+    public String getPersonaArchetype() { return personaArchetype; }
+    public void setPersonaArchetype(String v) { this.personaArchetype = v; }
+    public String getPersonaNarrative() { return personaNarrative; }
+    public void setPersonaNarrative(String v) { this.personaNarrative = v; }
+    public Double getPersonaGritScore() { return personaGritScore; }
+    public void setPersonaGritScore(Double v) { this.personaGritScore = v; }
+    public Double getPersonaIntentAlignment() { return personaIntentAlignment; }
+    public void setPersonaIntentAlignment(Double v) { this.personaIntentAlignment = v; }
+    public String getPersonaSocialShadow() { return personaSocialShadow; }
+    public void setPersonaSocialShadow(String v) { this.personaSocialShadow = v; }
+    public String getPersonaVerdict() { return personaVerdict; }
+    public void setPersonaVerdict(String v) { this.personaVerdict = v; }
+
+    public Double getPersonaRiskModifier() { return personaRiskModifier; }
+    public void setPersonaRiskModifier(Double v) { this.personaRiskModifier = v; }
+    public Double getPersonaLimitMultiplier() { return personaLimitMultiplier; }
+    public void setPersonaLimitMultiplier(Double v) { this.personaLimitMultiplier = v; }
+
     public LocalDateTime getComputedAt() { return computedAt; }
 }

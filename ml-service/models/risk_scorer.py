@@ -67,8 +67,8 @@ class RiskScorer:
         pred_class = int(np.argmax(proba))
         confidence = float(proba[pred_class])
 
-        # Risk score: high score = low risk. Weight toward approved probability.
-        risk_score = round(float(proba[2]) * 100, 1)
+        # Risk score: high score = high risk. Weight toward rejected & manual review probability.
+        risk_score = round((1.0 - float(proba[2])) * 100, 1)
 
         return {
             "risk_score": risk_score,

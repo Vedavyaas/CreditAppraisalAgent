@@ -192,13 +192,50 @@ public class MlClientService {
         }
     }
 
+    /**
+     * Call /predict/persona — Performs wide human-centric synthesis.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> predictPersona(Long applicationId,
+                                               String companyName,
+                                               double requestedAmount,
+                                               double riskScore,
+                                               double fraudProb,
+                                               double growthRate,
+                                               double sentiment,
+                                               int cibilScore,
+                                               int litigationCount,
+                                               double sectorGrowth) {
+        try {
+            Map<String, Object> body = Map.of(
+                    "application_id", applicationId,
+                    "company_name", companyName,
+                    "requested_amount", requestedAmount,
+                    "risk_score", riskScore,
+                    "fraud_probability", fraudProb,
+                    "growth_rate", growthRate,
+                    "sentiment_score", sentiment,
+                    "cibil_score", cibilScore,
+                    "litigation_count", litigationCount,
+                    "sector_growth", sectorGrowth
+            );
+            ResponseEntity<Map> resp = restTemplate.postForEntity(
+                    baseUrl() + "/predict/persona", body, Map.class);
+            return resp.getBody();
+        } catch (Exception e) {
+            return Map.of("archetype", "THE_STEADY_PILLAR", "human_narrative", "Unable to synthesize persona narrative.",
+                    "grit_score", 50.0, "intent_alignment", 50.0, "social_shadow", "NEUTRAL", "human_verdict", "CAUTIONARY");
+        }
+    }
+
     /** Save all ML predictions back to the DB for caching. */
 
     public MlPredictionResult savePredictions(Long applicationId,
                                                Map<String, Object> risk,
                                                Map<String, Object> fraud,
                                                Map<String, Object> forecast,
-                                               Map<String, Object> loan) {
+                                               Map<String, Object> loan,
+                                               Map<String, Object> persona) {
         MlPredictionResult result = predictionRepository
                 .findByApplicationId(applicationId)
                 .orElse(new MlPredictionResult());
@@ -227,8 +264,29 @@ public class MlClientService {
             result.setEmiEstimate(toDouble(loan.get("emi_estimate")));
             result.setRecommendationTier((String) loan.get("recommendation_tier"));
         }
+        if (persona != null) {
+            result.setPersonaArchetype((String) persona.get("archetype"));
+            result.setPersonaNarrative((String) persona.get("human_narrative"));
+            result.setPersonaGritScore(toDouble(persona.get("grit_score")));
+            result.setPersonaIntentAlignment(toDouble(persona.get("intent_alignment")));
+            result.setPersonaSocialShadow((String) persona.get("social_shadow"));
+            result.setPersonaVerdict((String) persona.get("human_verdict"));
+            // Neural Network Constraints
+            result.setPersonaRiskModifier(toDouble(persona.get("risk_modifier")));
+            result.setPersonaLimitMultiplier(toDouble(persona.get("limit_multiplier")));
+        }
 
         return predictionRepository.save(result);
+    }
+
+    /** Update Final Rule-Engine and Neural-Network Constraints to make DB Single Source of Truth. */
+    public void updateFinalConstraints(Long applicationId, double finalRiskScore, String finalDecision, double finalLoan) {
+        predictionRepository.findByApplicationId(applicationId).ifPresent(p -> {
+            p.setRiskScore(finalRiskScore);
+            p.setDecision(finalDecision);
+            p.setRecommendedMaxLoan(finalLoan);
+            predictionRepository.save(p);
+        });
     }
 
     /** Save crawled research data back to the DB. */
