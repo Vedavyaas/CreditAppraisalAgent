@@ -1,0 +1,15 @@
+target/
+frontend/
+ml-service/
+uploads/
+cam-reports/
+.git/
+.idea/
+.mvn/
+mvnw
+mvnw.cmd
+HELP.md
+generate_samples.py
+docker-compose.yml
+Dockerfile
+README.md

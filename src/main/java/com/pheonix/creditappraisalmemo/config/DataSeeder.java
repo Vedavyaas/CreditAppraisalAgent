@@ -508,7 +508,8 @@ public class DataSeeder implements ApplicationRunner {
         config.setMaxAutoApprovalLoanAmount(5_000_000.0);
         config.setCibilCheckRequired(true);
         config.setForceOtpLogin(false);
-        config.setMlServiceUrl("http://localhost:8000");
+        String mlUrl = System.getenv("ML_SERVICE_URL");
+        config.setMlServiceUrl(mlUrl != null ? mlUrl : "http://localhost:8000");
         rulesRepo.save(config);
     }
 }
