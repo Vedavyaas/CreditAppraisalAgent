@@ -4,7 +4,7 @@ import com.pheonix.creditappraisalmemo.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 
@@ -21,12 +21,15 @@ public class MlClientService {
     private final RestTemplate restTemplate;
     private final RulesService rulesService;
     private final MlPredictionRepository predictionRepository;
+    private final WebResearchRepository researchRepository;
 
     public MlClientService(RulesService rulesService,
-                           MlPredictionRepository predictionRepository) {
+                           MlPredictionRepository predictionRepository,
+                           WebResearchRepository researchRepository) {
         this.restTemplate = new RestTemplate();
         this.rulesService = rulesService;
         this.predictionRepository = predictionRepository;
+        this.researchRepository = researchRepository;
     }
 
     private String baseUrl() {
@@ -170,6 +173,25 @@ public class MlClientService {
         }
     }
 
+    /**
+     * Call /crawl/research — Triggers Python to scrape public master data.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> crawlResearch(Long applicationId, String companyName, String cin) {
+        try {
+            Map<String, Object> body = Map.of(
+                    "application_id", applicationId,
+                    "company_name", companyName,
+                    "cin", cin != null ? cin : ""
+            );
+            ResponseEntity<Map> resp = restTemplate.postForEntity(
+                    baseUrl() + "/crawl/research", body, Map.class);
+            return resp.getBody();
+        } catch (Exception e) {
+            return Map.of("mca_cin", cin != null ? cin : "N/A", "mca_status", "Active (Manual Check Required)");
+        }
+    }
+
     /** Save all ML predictions back to the DB for caching. */
 
     public MlPredictionResult savePredictions(Long applicationId,
@@ -207,6 +229,51 @@ public class MlClientService {
         }
 
         return predictionRepository.save(result);
+    }
+
+    /** Save crawled research data back to the DB. */
+    public WebResearchResult saveResearch(Long applicationId, Map<String, Object> research) {
+        WebResearchResult result = researchRepository
+                .findByApplicationId(applicationId)
+                .orElse(new WebResearchResult());
+
+        result.setApplicationId(applicationId);
+        result.setMcaCin((String) research.get("mca_cin"));
+        result.setMcaFilingStatus((String) research.get("mca_status"));
+        result.setMcaActive(research.get("is_active") != null && (boolean) research.get("is_active"));
+        result.setMcaPaidUpCapital((String) research.get("paid_up_capital"));
+        result.setMcaDirectorCount(toInt(research.get("director_count")));
+        result.setMcaRegisteredDate((String) research.get("registration_date"));
+        
+        result.setNewsOverallSentiment((String) research.get("news_sentiment"));
+        if (research.get("news_items") != null) {
+            try {
+                // Simple way to store JSON array in H2 for demo
+                result.setNewsItemsJson(new ObjectMapper()
+                        .writeValueAsString(research.get("news_items")));
+            } catch (Exception e) {
+                result.setNewsItemsJson("[]");
+            }
+        }
+
+        result.setECourtsCaseCount(toInt(research.get("litigation_count")));
+        result.setLitigationNote((String) research.get("litigation_note"));
+        result.setDgftAlerts((String) research.get("dgft_alerts"));
+        
+        result.setCibilScore(toInt(research.get("cibil_score")));
+        result.setCibilGrade((String) research.get("cibil_grade"));
+        result.setCibilOutstandingLoans(toInt(research.get("cibil_loans")));
+        result.setCibilOverdueAccounts(toInt(research.get("cibil_overdue")));
+        
+        result.setSectorName((String) research.get("sector_name"));
+        result.setSectorGrowthPct(toDouble(research.get("sector_growth")));
+        result.setSectorHeadwind((String) research.get("sector_headwind"));
+        result.setRbiPolicyNote((String) research.get("rbi_note"));
+
+        result.setCrawlSource((String) research.get("source"));
+        result.setCrawledAt(java.time.LocalDateTime.now());
+
+        return researchRepository.save(result);
     }
 
     private double toDouble(Object v) {

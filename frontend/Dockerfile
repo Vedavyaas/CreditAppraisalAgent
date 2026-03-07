@@ -2,7 +2,8 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+# Use a cache mount to speed up npm install
+RUN --mount=type=cache,target=/root/.npm npm install
 COPY . .
 # We use relative URLs now, so we can set a dummy build-time URL or just root
 ARG VITE_API_BASE_URL=/api

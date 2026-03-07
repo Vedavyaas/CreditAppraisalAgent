@@ -3,6 +3,7 @@ package com.pheonix.creditappraisalmemo.controller;
 import com.pheonix.creditappraisalmemo.aspect.AuditAction;
 import com.pheonix.creditappraisalmemo.domain.*;
 import com.pheonix.creditappraisalmemo.service.AutomatedReportService;
+import com.pheonix.creditappraisalmemo.service.MlClientService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,19 +20,22 @@ public class ApplicationDataController {
     private final CreditApplicationRepository   appRepo;
     private final WebResearchRepository         researchRepo;
     private final DocumentRepository            docRepo;
+    private final MlClientService               mlClientService;
 
     public ApplicationDataController(GstEntryRepository gstRepo,
                                      BankTransactionRepository bankRepo,
                                      AutomatedReportService reportService,
                                      CreditApplicationRepository appRepo,
                                      WebResearchRepository researchRepo,
-                                     DocumentRepository docRepo) {
+                                     DocumentRepository docRepo,
+                                     MlClientService mlClientService) {
         this.gstRepo      = gstRepo;
         this.bankRepo     = bankRepo;
         this.reportService = reportService;
         this.appRepo      = appRepo;
         this.researchRepo = researchRepo;
         this.docRepo      = docRepo;
+        this.mlClientService = mlClientService;
     }
 
     /** List all credit applications — used by DD picker and portfolio views */
@@ -84,6 +88,40 @@ public class ApplicationDataController {
     public ResponseEntity<List<Document>> getDocuments(@PathVariable Long applicationId) {
         return ResponseEntity.ok(docRepo.findAll().stream()
                 .filter(d -> applicationId.equals(d.getApplicationId())).toList());
+    }
+
+    /** Create a new credit application */
+    @AuditAction("Created a new credit application")
+    @PreAuthorize("hasAnyRole('CREDIT_OFFICER','ADMIN')")
+    @PostMapping
+    public ResponseEntity<Object> createApplication(@RequestBody CreditApplication app) {
+        // 🛡️ DUPLICATE CHECK: Prevent multiple concurrent applications for the same company (CIN)
+        if (app.getCin() != null && !app.getCin().isBlank()) {
+            var existing = appRepo.findByCin(app.getCin());
+            if (existing.isPresent()) {
+                return ResponseEntity.badRequest().body(
+                    java.util.Map.of("message", "An active credit application already exists for this CIN: " + app.getCin())
+                );
+            }
+        }
+
+        if (app.getCreatedBy() == null) {
+            app.setCreatedBy("credit@test.com"); // Default for demo if not provided
+        }
+        CreditApplication savedApp = appRepo.save(app);
+
+        // 🚀 Background Trigger for Research Crawler
+        new Thread(() -> {
+            try {
+                java.util.Map<String, Object> crawlData = mlClientService.crawlResearch(
+                        savedApp.getId(), savedApp.getCompanyName(), savedApp.getCin());
+                mlClientService.saveResearch(savedApp.getId(), crawlData);
+            } catch (Exception e) {
+                // Silently fail or log for demo
+            }
+        }).start();
+
+        return ResponseEntity.ok(savedApp);
     }
 
     /** Update compliance status */

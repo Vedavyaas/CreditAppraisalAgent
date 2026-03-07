@@ -11,6 +11,7 @@ export const AdminDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState('users');
     const [users, setUsers] = useState<any[]>([]);
     const [auditLogs, setAuditLogs] = useState<any[]>([]);
+    const [employeeStats, setEmployeeStats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -28,6 +29,12 @@ export const AdminDashboard: React.FC = () => {
     const fetchAuditLogs = React.useCallback(() => {
         apiClient.get('/audit')
             .then(res => setAuditLogs(res.data))
+            .catch(console.error);
+    }, []);
+
+    const fetchWorkforceAnalytics = React.useCallback(() => {
+        apiClient.get('/admin/workforce-analytics')
+            .then(res => setEmployeeStats(res.data))
             .catch(console.error);
     }, []);
 
@@ -71,7 +78,8 @@ export const AdminDashboard: React.FC = () => {
         fetchUsers();
         fetchAuditLogs();
         fetchRules();
-    }, [fetchUsers, fetchAuditLogs, fetchRules]);
+        fetchWorkforceAnalytics();
+    }, [fetchUsers, fetchAuditLogs, fetchRules, fetchWorkforceAnalytics]);
 
 
     const handleRoleChange = (userId: number, newRole: string) => {
@@ -109,14 +117,8 @@ export const AdminDashboard: React.FC = () => {
     }, {});
     const maxRoleCount = Math.max(...Object.values(roleGroups), 1);
 
-    const activityByUser = users.map((u: any) => ({
-        name: u.name,
-        role: u.role,
-        actions: auditLogs.filter((a: any) =>
-            a.username === u.email || a.username === u.name
-        ).length,
-    })).sort((a, b) => b.actions - a.actions).slice(0, 8);
-    const maxActivity = Math.max(...activityByUser.map(u => u.actions), 1);
+    const activityByUser = (employeeStats || []).sort((a, b) => b.totalActions - a.totalActions).slice(0, 8);
+    const maxActivity = Math.max(...activityByUser.map(u => u.totalActions), 1);
 
     const ROLE_COLORS: Record<string, string> = {
         ADMIN: '#6366f1', CREDIT_OFFICER: '#0ea5e9', RISK_ANALYST: '#f59e0b',
@@ -174,13 +176,13 @@ export const AdminDashboard: React.FC = () => {
                                                 <span className="text-xs font-bold text-slate-700">{u.name}</span>
                                                 <span className="text-[9px] font-black text-slate-400 uppercase">{u.role?.replace('_', ' ')}</span>
                                             </div>
-                                            <span className="text-sm font-black text-slate-700">{u.actions}</span>
+                                            <span className="text-sm font-black text-slate-700">{u.totalActions}</span>
                                         </div>
                                         <div className="w-full bg-slate-100 rounded-full h-2.5">
                                             <div
                                                 className="h-2.5 rounded-full transition-all duration-700"
                                                 style={{
-                                                    width: `${Math.round((u.actions / maxActivity) * 100)}%`,
+                                                    width: `${Math.round((u.totalActions / maxActivity) * 100)}%`,
                                                     backgroundColor: ROLE_COLORS[u.role] ?? '#94a3b8'
                                                 }}
                                             />

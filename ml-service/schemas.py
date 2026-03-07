@@ -94,3 +94,34 @@ class QualitativeResponse(BaseModel):
     adjustment_reason: str              # Explainability text
     capacity_signal: str                # STRONG | MODERATE | WEAK
 
+
+# ── Research Web Crawler ────────────────────────────────────────────────────
+class ResearchCrawlerRequest(BaseModel):
+    application_id: int
+    company_name: str
+    cin: Optional[str] = None
+
+
+class ResearchCrawlerResponse(BaseModel):
+    application_id: int
+    mca_cin: str
+    mca_status: str
+    is_active: bool
+    paid_up_capital: str
+    director_count: int
+    registration_date: str
+    news_sentiment: str
+    news_items: List[dict]
+    litigation_count: int
+    litigation_note: str
+    dgft_alerts: str
+    cibil_score: int
+    cibil_grade: str
+    cibil_loans: int
+    cibil_overdue: int
+    sector_name: str
+    sector_growth: float
+    sector_headwind: str
+    rbi_note: str
+    source: str
+

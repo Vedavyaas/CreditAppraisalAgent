@@ -15,12 +15,14 @@ from schemas import (
     ForecastRequest, ForecastResponse,
     LoanRecommenderRequest, LoanRecommenderResponse,
     QualitativeRequest, QualitativeResponse,
+    ResearchCrawlerRequest, ResearchCrawlerResponse,
 )
 from models.risk_scorer import scorer
 from models.fraud_detector import detector
 from models.revenue_forecaster import forecaster
 from models.loan_recommender import recommender
 from models.qualitative_adjuster import adjuster
+from models.research_crawler import crawler
 
 app = FastAPI(
     title="Credit Appraisal ML Service",
@@ -42,7 +44,7 @@ logger = logging.getLogger("ml-service")
 @app.get("/health")
 def health():
     """Spring Boot pings this to verify the ML service is up."""
-    return {"status": "UP", "models": ["risk_scorer", "fraud_detector", "revenue_forecaster", "loan_recommender", "qualitative_adjuster"]}
+    return {"status": "UP", "models": ["risk_scorer", "fraud_detector", "revenue_forecaster", "loan_recommender", "qualitative_adjuster", "research_crawler"]}
 
 
 # ── Risk Score ────────────────────────────────────────────────────────────────
@@ -142,5 +144,23 @@ def predict_qualitative(req: QualitativeRequest):
         return QualitativeResponse(application_id=req.application_id, **result)
     except Exception as e:
         logger.error(f"Qualitative adjuster error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Web Research Crawler ────────────────────────────────────────────────────
+@app.post("/crawl/research", response_model=ResearchCrawlerResponse)
+def crawl_research(req: ResearchCrawlerRequest):
+    """
+    Triggers the Python Research Agent to scrape and synthesize 
+    real-time corporate data from public sources (MCA/Zaubacorp/News).
+    """
+    try:
+        result = crawler.crawl(
+            company_name=req.company_name,
+            cin=req.cin
+        )
+        return ResearchCrawlerResponse(application_id=req.application_id, **result)
+    except Exception as e:
+        logger.error(f"Crawler error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 

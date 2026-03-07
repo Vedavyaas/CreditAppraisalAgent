@@ -4,6 +4,7 @@ import com.pheonix.creditappraisalmemo.aspect.AuditAction;
 import com.pheonix.creditappraisalmemo.domain.QualitativeNote;
 import com.pheonix.creditappraisalmemo.domain.QualitativeNoteRepository;
 import com.pheonix.creditappraisalmemo.service.MlClientService;
+import com.pheonix.creditappraisalmemo.service.AutomatedReportService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +21,14 @@ public class DueDiligenceController {
 
     private final QualitativeNoteRepository noteRepository;
     private final MlClientService mlClientService;
+    private final AutomatedReportService reportService;
 
     public DueDiligenceController(QualitativeNoteRepository noteRepository,
-                                   MlClientService mlClientService) {
+                                   MlClientService mlClientService,
+                                   AutomatedReportService reportService) {
         this.noteRepository = noteRepository;
         this.mlClientService = mlClientService;
+        this.reportService = reportService;
     }
 
     /** GET — fetch existing notes for this application */
@@ -68,6 +72,15 @@ public class DueDiligenceController {
         note.setQualitativeScoreAdjustment((Double) result.getOrDefault("score_adjustment", 0.0));
         note.setOverallSentiment((String) result.getOrDefault("sentiment", "NEUTRAL"));
 
-        return ResponseEntity.ok(noteRepository.save(note));
+        QualitativeNote saved = noteRepository.save(note);
+        
+        // 🚀 RE-SCORE: Instantly update the Automated ML Report with these new field insights
+        new Thread(() -> {
+            try {
+                reportService.generateReport(applicationId);
+            } catch (Exception e) {}
+        }).start();
+
+        return ResponseEntity.ok(saved);
     }
 }

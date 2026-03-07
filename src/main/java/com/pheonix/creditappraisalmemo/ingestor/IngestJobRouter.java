@@ -3,6 +3,7 @@ package com.pheonix.creditappraisalmemo.ingestor;
 import com.pheonix.creditappraisalmemo.domain.Document;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
@@ -10,6 +11,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.launch.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.launch.JobRestartException;
+import com.pheonix.creditappraisalmemo.service.AutomatedReportService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -28,15 +30,18 @@ public class IngestJobRouter {
     private final Job gstIngestionJob;
     private final Job bankIngestionJob;
     private final Job pdfExtractionJob;
+    private final AutomatedReportService reportService;
 
     public IngestJobRouter(JobLauncher jobLauncher,
                            Job gstIngestionJob,
                            Job bankIngestionJob,
-                           Job pdfExtractionJob) {
+                           Job pdfExtractionJob,
+                           AutomatedReportService reportService) {
         this.jobLauncher = jobLauncher;
         this.gstIngestionJob = gstIngestionJob;
         this.bankIngestionJob = bankIngestionJob;
         this.pdfExtractionJob = pdfExtractionJob;
+        this.reportService = reportService;
     }
 
     /**
@@ -59,6 +64,27 @@ public class IngestJobRouter {
                 .toJobParameters();
 
         JobExecution execution = jobLauncher.run(job, params);
+
+        // 🚀 AUTO-SYNTHESIS: If GST or Bank, trigger the ML engine in background after job finishes
+        if (document.getType() == Document.DocumentType.GST_RETURN || 
+            document.getType() == Document.DocumentType.BANK_STATEMENT) {
+            
+            new Thread(() -> {
+                try {
+                    // Simple poll/wait for job completion (demo style)
+                    while (execution.getStatus().isRunning()) {
+                        Thread.sleep(1000);
+                    }
+                    if (execution.getStatus() == BatchStatus.COMPLETED) {
+                        System.out.println("[IngestRouter] Job " + execution.getId() + " success. Triggering ML Synthesis...");
+                        reportService.generateReport(document.getApplicationId());
+                    }
+                } catch (Exception e) {
+                    System.err.println("[IngestRouter] Synthesis trigger failed: " + e.getMessage());
+                }
+            }).start();
+        }
+
         return execution.getId();
     }
 
