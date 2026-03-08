@@ -12,6 +12,7 @@ export const AdminDashboard: React.FC = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [auditLogs, setAuditLogs] = useState<any[]>([]);
     const [employeeStats, setEmployeeStats] = useState<any[]>([]);
+    const [dbApps, setDbApps] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -35,6 +36,12 @@ export const AdminDashboard: React.FC = () => {
     const fetchWorkforceAnalytics = React.useCallback(() => {
         apiClient.get('/admin/workforce-analytics')
             .then(res => setEmployeeStats(res.data))
+            .catch(console.error);
+    }, []);
+
+    const fetchApps = React.useCallback(() => {
+        apiClient.get('/applications')
+            .then(res => setDbApps(res.data))
             .catch(console.error);
     }, []);
 
@@ -79,7 +86,8 @@ export const AdminDashboard: React.FC = () => {
         fetchAuditLogs();
         fetchRules();
         fetchWorkforceAnalytics();
-    }, [fetchUsers, fetchAuditLogs, fetchRules, fetchWorkforceAnalytics]);
+        fetchApps();
+    }, [fetchUsers, fetchAuditLogs, fetchRules, fetchWorkforceAnalytics, fetchApps]);
 
 
     const handleRoleChange = (userId: number, newRole: string) => {
@@ -360,7 +368,6 @@ export const AdminDashboard: React.FC = () => {
                                 <th className="px-6 py-4 rounded-tl-lg">Timestamp</th>
                                 <th className="px-6 py-4">User / Subject</th>
                                 <th className="px-6 py-4">Action Event</th>
-                                <th className="px-6 py-4">Endpoint</th>
                                 <th className="px-6 py-4">Latency</th>
                                 <th className="px-6 py-4 text-right rounded-tr-lg">Status</th>
                             </tr>
@@ -376,11 +383,8 @@ export const AdminDashboard: React.FC = () => {
                                     <td className="px-6 py-3 font-semibold text-slate-700">
                                         {log.username}
                                     </td>
-                                    <td className="px-6 py-3 text-slate-600 text-xs font-mono">
-                                        {log.action}
-                                    </td>
-                                    <td className="px-6 py-3 text-slate-500 text-xs flex max-w-[200px] truncate" title={log.endpoint}>
-                                        {log.endpoint}
+                                    <td className="px-6 py-3 text-slate-800 text-xs font-medium">
+                                        {log.message || log.action}
                                     </td>
                                     <td className="px-6 py-3 text-slate-500 text-xs">
                                         {log.executionTimeMs}ms
@@ -446,7 +450,7 @@ export const AdminDashboard: React.FC = () => {
                                 value={loanAmount}
                                 onChange={(e) => setLoanAmount(Number(e.target.value))}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Applications with ML-recommended loan above this go to MANUAL_REVIEW even if risk score is OK.</p>
+                            <p className="text-xs text-slate-500 mt-1">Applications with ML-recommended loan above this go to MANUAL_REVIEW even if assurance score is OK.</p>
                         </div>
 
                         <div className="pt-4 border-t border-slate-100">
@@ -504,7 +508,7 @@ export const AdminDashboard: React.FC = () => {
             <MacWindow title="Active Credit Queue" className="flex-1 flex flex-col min-h-[500px]">
                 <div className="p-4 bg-yellow-50 border-b border-yellow-100 flex items-center">
                     <AlertCircle className="w-5 h-5 text-yellow-600 mr-3" />
-                    <p className="text-sm text-yellow-800 font-medium">Showing applications stagnant for &gt; 24 hours.</p>
+                    <p className="text-sm text-yellow-800 font-medium">Showing active applications in the CRM.</p>
                 </div>
                 <div className="flex-1 overflow-auto p-2">
                     <table className="w-full text-sm text-left">
@@ -518,26 +522,28 @@ export const AdminDashboard: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {[
-                                { id: 'APP-9021', name: 'TechNova Solutions Pvt Ltd', assignee: 'John Risk', status: 'PENDING_REVIEW' },
-                                { id: 'APP-8843', name: 'Global Impex Traders', assignee: 'Sarah Credit', status: 'AWAITING_DOCS' },
-                                { id: 'APP-9102', name: 'Blue Ridge Manufacturing', assignee: 'John Risk', status: 'PENDING_REVIEW' }
-                            ].map((app) => (
+                            {dbApps.map((app) => (
                                 <tr key={app.id} className="transition-colors hover:bg-slate-50">
-                                    <td className="px-6 py-4 font-mono font-bold text-indigo-600">{app.id}</td>
-                                    <td className="px-6 py-4 font-bold text-slate-700">{app.name}</td>
-                                    <td className="px-6 py-4 text-slate-500">{app.assignee}</td>
+                                    <td className="px-6 py-4 font-mono font-bold text-indigo-600">APP-{app.id}</td>
+                                    <td className="px-6 py-4 font-bold text-slate-700">{app.companyName}</td>
+                                    <td className="px-6 py-4 text-slate-500">{app.createdBy}</td>
                                     <td className="px-6 py-4">
                                         <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-black tracking-widest rounded border border-amber-200">
                                             {app.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <select className="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-indigo-500 block w-full p-2">
-                                            <option>Select new owner...</option>
-                                            <option>Mike Manager</option>
-                                            <option>Sarah Credit</option>
-                                            <option>Elena Processing</option>
+                                        <select className="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg focus:ring-indigo-500 block w-full p-2"
+                                            value={app.createdBy}
+                                            onChange={(e) => {
+                                                // Minimal implementation: Ideally call an API to reassign user
+                                                alert('Reassignment pending implementation for ' + e.target.value);
+                                            }}
+                                        >
+                                            <option value="">Select new owner...</option>
+                                            {users.map(u => (
+                                                <option key={u.id} value={u.email}>{u.name} ({u.role})</option>
+                                            ))}
                                         </select>
                                     </td>
                                 </tr>

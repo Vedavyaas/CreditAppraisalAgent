@@ -67,14 +67,22 @@ class RiskScorer:
         pred_class = int(np.argmax(proba))
         confidence = float(proba[pred_class])
 
-        # Risk score: high score = high risk. Weight toward rejected & manual review probability.
-        risk_score = round((1.0 - float(proba[2])) * 100, 1)
+        # Assurance score: high score = high assurance. Weight toward approved probability.
+        assurance_score = float(proba[2]) * 100
+        
+        # Make like higher for "paying ones" (high avg balance & good credit/debit ratio)
+        if avg_monthly_balance > 5.0 and credit_debit_ratio >= 1.0:
+            assurance_score += 15.0
+            
+        assurance_score = round(min(assurance_score, 100.0), 1)
+
+        decision = "APPROVED" if assurance_score >= 75 else ("MANUAL_REVIEW" if assurance_score >= 40 else "REJECTED")
 
         return {
-            "risk_score": risk_score,
-            "decision": self.DECISION_MAP[pred_class],
+            "assurance_score": assurance_score,
+            "decision": decision,
             "confidence": round(confidence, 4),
-            "risk_band": self.BAND_MAP[pred_class],
+            "risk_band": "LOW" if assurance_score >= 75 else ("MEDIUM" if assurance_score >= 40 else "HIGH"),
         }
 
 

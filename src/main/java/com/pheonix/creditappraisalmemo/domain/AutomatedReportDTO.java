@@ -6,7 +6,7 @@ public class AutomatedReportDTO {
     private String id;
     private String name;
     private Double requestedAmount;
-    private Integer aiRiskScore;
+    private Integer assuranceScore;
     private String autoDecision;
     private String fraudProbability;
     private String dtiRatio;
@@ -15,11 +15,11 @@ public class AutomatedReportDTO {
     public AutomatedReportDTO() {
     }
 
-    public AutomatedReportDTO(String id, String name, Double requestedAmount, Integer aiRiskScore, String autoDecision, String fraudProbability, String dtiRatio, List<String> keyDrivers) {
+    public AutomatedReportDTO(String id, String name, Double requestedAmount, Integer assuranceScore, String autoDecision, String fraudProbability, String dtiRatio, List<String> keyDrivers) {
         this.id = id;
         this.name = name;
         this.requestedAmount = requestedAmount;
-        this.aiRiskScore = aiRiskScore;
+        this.assuranceScore = assuranceScore;
         this.autoDecision = autoDecision;
         this.fraudProbability = fraudProbability;
         this.dtiRatio = dtiRatio;
@@ -50,12 +50,12 @@ public class AutomatedReportDTO {
         this.requestedAmount = requestedAmount;
     }
 
-    public Integer getAiRiskScore() {
-        return aiRiskScore;
+    public Integer getAssuranceScore() {
+        return assuranceScore;
     }
 
-    public void setAiRiskScore(Integer aiRiskScore) {
-        this.aiRiskScore = aiRiskScore;
+    public void setAssuranceScore(Integer assuranceScore) {
+        this.assuranceScore = assuranceScore;
     }
 
     public String getAutoDecision() {

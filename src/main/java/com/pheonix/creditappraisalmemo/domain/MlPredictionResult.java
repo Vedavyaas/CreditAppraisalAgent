@@ -19,10 +19,10 @@ public class MlPredictionResult {
     private Long applicationId;
 
     // Risk Scorer outputs
-    private Double riskScore;
+    private Double assuranceScore;
     private String decision;          // APPROVED / MANUAL_REVIEW / REJECTED
-    private Double riskConfidence;
-    private String riskBand;          // LOW / MEDIUM / HIGH
+    private Double assuranceConfidence;
+    private String assuranceBand;          // LOW / MEDIUM / HIGH
 
     // Fraud Detector outputs
     private Double fraudProbability;
@@ -40,18 +40,6 @@ public class MlPredictionResult {
     private Double emiEstimate;
     private String recommendationTier; // PRIME / STANDARD / RESTRICTED
 
-    // 🧠 Persona Brain (Human-Centric Synthesis)
-    private String personaArchetype;
-    @Column(length = 2000)
-    private String personaNarrative;
-    private Double personaGritScore;
-    private Double personaIntentAlignment;
-    private String personaSocialShadow;
-    private String personaVerdict;
-
-    private Double personaRiskModifier;
-    private Double personaLimitMultiplier;
-
     private LocalDateTime computedAt;
 
     @PrePersist
@@ -62,14 +50,14 @@ public class MlPredictionResult {
     public Long getId() { return id; }
     public Long getApplicationId() { return applicationId; }
     public void setApplicationId(Long v) { this.applicationId = v; }
-    public Double getRiskScore() { return riskScore; }
-    public void setRiskScore(Double v) { this.riskScore = v; }
+    public Double getAssuranceScore() { return assuranceScore; }
+    public void setAssuranceScore(Double v) { this.assuranceScore = v; }
     public String getDecision() { return decision; }
     public void setDecision(String v) { this.decision = v; }
-    public Double getRiskConfidence() { return riskConfidence; }
-    public void setRiskConfidence(Double v) { this.riskConfidence = v; }
-    public String getRiskBand() { return riskBand; }
-    public void setRiskBand(String v) { this.riskBand = v; }
+    public Double getAssuranceConfidence() { return assuranceConfidence; }
+    public void setAssuranceConfidence(Double v) { this.assuranceConfidence = v; }
+    public String getAssuranceBand() { return assuranceBand; }
+    public void setAssuranceBand(String v) { this.assuranceBand = v; }
     public Double getFraudProbability() { return fraudProbability; }
     public void setFraudProbability(Double v) { this.fraudProbability = v; }
     public String getFraudProbabilityPct() { return fraudProbabilityPct; }
@@ -91,23 +79,6 @@ public class MlPredictionResult {
     public String getRecommendationTier() { return recommendationTier; }
     public void setRecommendationTier(String v) { this.recommendationTier = v; }
 
-    public String getPersonaArchetype() { return personaArchetype; }
-    public void setPersonaArchetype(String v) { this.personaArchetype = v; }
-    public String getPersonaNarrative() { return personaNarrative; }
-    public void setPersonaNarrative(String v) { this.personaNarrative = v; }
-    public Double getPersonaGritScore() { return personaGritScore; }
-    public void setPersonaGritScore(Double v) { this.personaGritScore = v; }
-    public Double getPersonaIntentAlignment() { return personaIntentAlignment; }
-    public void setPersonaIntentAlignment(Double v) { this.personaIntentAlignment = v; }
-    public String getPersonaSocialShadow() { return personaSocialShadow; }
-    public void setPersonaSocialShadow(String v) { this.personaSocialShadow = v; }
-    public String getPersonaVerdict() { return personaVerdict; }
-    public void setPersonaVerdict(String v) { this.personaVerdict = v; }
-
-    public Double getPersonaRiskModifier() { return personaRiskModifier; }
-    public void setPersonaRiskModifier(Double v) { this.personaRiskModifier = v; }
-    public Double getPersonaLimitMultiplier() { return personaLimitMultiplier; }
-    public void setPersonaLimitMultiplier(Double v) { this.personaLimitMultiplier = v; }
 
     public LocalDateTime getComputedAt() { return computedAt; }
 }

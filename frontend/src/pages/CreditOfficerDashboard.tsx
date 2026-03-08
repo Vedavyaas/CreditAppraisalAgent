@@ -372,7 +372,7 @@ export const CreditOfficerDashboard: React.FC = () => {
                     </div>
                     <p className="text-slate-500 mt-1 text-sm">
                         Enter qualitative observations from factory visits and management interviews.
-                        The AI adjusts the final risk score based on these primary insights.
+                        The AI adjusts the final assurance score based on these primary insights.
                     </p>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -490,7 +490,7 @@ export const CreditOfficerDashboard: React.FC = () => {
                                 onChange={e => setDdForm({ ...ddForm, legalConcernsNoted: e.target.value })}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
                             />
-                            <p className="text-xs text-slate-400 mt-2">Leave blank if no legal concerns observed. Any entry triggers a −10 pt risk penalty.</p>
+                            <p className="text-xs text-slate-400 mt-2">Leave blank if no legal concerns observed. Any entry triggers a −10 pt assurance penalty.</p>
                         </div>
                     </MacWindow>
 
@@ -518,7 +518,7 @@ export const CreditOfficerDashboard: React.FC = () => {
                                 </div>
                                 <div className="flex items-center space-x-2 text-xs text-slate-400">
                                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                    <span>This adjustment will be incorporated into the final CAM risk score.</span>
+                                    <span>This adjustment will be incorporated into the final CAM assurance score.</span>
                                 </div>
                             </div>
                         </MacWindow>
@@ -642,7 +642,7 @@ export const CreditOfficerDashboard: React.FC = () => {
                                     </h3>
                                     <div className="space-y-2">
                                         {[
-                                            { c: 'Character', val: selectedAppScore ? `${selectedAppScore.riskScore}/100 Confidence` : 'Pending Assessment', color: 'indigo' },
+                                            { c: 'Character', val: selectedAppScore ? `${selectedAppScore.assuranceScore}/100 Confidence` : 'Pending Assessment', color: 'indigo' },
                                             { c: 'Capacity', val: selectedAppGstAvg, color: 'slate' },
                                             { c: 'Capital', val: selectedAppScore ? `Max Loan: ₹ ${(selectedAppScore.recommendedMaxLoan / 1e7).toFixed(1)}Cr` : 'Net Worth: Pending', color: 'slate' },
                                             { c: 'Collateral', val: selectedAppScore ? `Tenor: ${selectedAppScore.recommendedTenorMonths}mo` : 'Asset cover: Unknown', color: 'amber' },

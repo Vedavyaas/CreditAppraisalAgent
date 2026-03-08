@@ -48,6 +48,8 @@ public class AutomatedReportService {
 
     @AuditAction("Automated ML synthesis & risk appraisal report generated")
     public AutomatedReportDTO generateReport(Long applicationId) {
+        
+        CreditApplication app = applicationRepository.findById(applicationId).orElse(null);
 
         // ── 1. Fetch raw data from DB ────────────────────────────────────────
         List<GstEntry> gstEntries = gstEntryRepository.findAll().stream()
@@ -105,52 +107,35 @@ public class AutomatedReportService {
         Map<String, Object> forecast = mlClientService.predictForecast(
                 applicationId, monthlyTurnovers);
 
-        double riskScore = toDouble(risk.get("risk_score"));
+        double assuranceScore = toDouble(risk.get("assurance_score"));
 
         Map<String, Object> loan = mlClientService.predictLoan(
-                applicationId, avgBalance, avgMonthlyCredit, riskScore,
+                applicationId, avgBalance, avgMonthlyCredit, assuranceScore,
                 avgGstVariancePct, suspiciousCount);
 
-        // ── Persona Brain (Synthesis of Human Archetype) ─────────────────────
-        CreditApplication app = applicationRepository.findById(applicationId).orElse(null);
-        WebResearchResult research = researchRepository.findByApplicationId(applicationId).orElse(new WebResearchResult());
-        QualitativeNote qn = qualitativeNoteRepository.findByApplicationId(applicationId).orElse(new QualitativeNote());
-
-        Map<String, Object> persona = mlClientService.predictPersona(
-                applicationId,
-                app != null ? app.getCompanyName() : "Unknown",
-                app != null ? app.getRequestedAmount() : 0.0,
-                riskScore,
-                toDouble(fraud.get("fraud_probability")),
-                toDouble(forecast.get("growth_rate_pct")),
-                qn.getQualitativeScoreAdjustment(),
-                research.getCibilScore() != null ? research.getCibilScore() : 600,
-                research.getECourtsCaseCount() != null ? research.getECourtsCaseCount() : 0,
-                research.getSectorGrowthPct() != null ? research.getSectorGrowthPct() : 0.0
-        );
-
         // ── 4. Save ALL predictions to DB (cached) ───────────────────────────
-        mlClientService.savePredictions(applicationId, risk, fraud, forecast, loan, persona);
+        mlClientService.savePredictions(applicationId, risk, fraud, forecast, loan);
 
         // ── 5. Apply Rules Engine & Neural Network Constraints ────────────────
         double maxAutoApproval = rulesService.getConfig().getMaxAutoApprovalLoanAmount();
         double recommendedLoan = toDouble(loan.get("recommended_max_loan"));
         String decision = (String) risk.get("decision");
         
-        // Extract NN Constraints
-        double nnLimitMultiplier = persona.containsKey("limit_multiplier") ? toDouble(persona.get("limit_multiplier")) : 1.0;
-        double nnRiskModifier = persona.containsKey("risk_modifier") ? toDouble(persona.get("risk_modifier")) : 0.0;
+        // Apply limit multiplier (removed Persona constraints)
+        double finalConstrainedLoan = recommendedLoan;
         
-        // Apply limit multiplier
-        double finalConstrainedLoan = recommendedLoan * nnLimitMultiplier;
-        
-        // Calculate the Final Combined Risk Score
-        double finalRiskScore = riskScore + nnRiskModifier;
-        if (finalRiskScore >= 100) {
-             finalRiskScore = 100.0;
-             decision = "REJECTED"; // Absolute algorithmic threshold bypass
-        } else if (finalRiskScore < 0) {
-             finalRiskScore = 0.0;
+        // Ensure Assurance Score Bounds
+        double finalAssuranceScore = assuranceScore;
+        if (finalAssuranceScore >= 100) finalAssuranceScore = 100.0;
+        if (finalAssuranceScore < 0) finalAssuranceScore = 0.0;
+
+        // Dynamically override the final algorithmic decision based on the constrained assurance bracket
+        if (finalAssuranceScore >= 75) {
+             decision = "APPROVED";
+        } else if (finalAssuranceScore >= 40 && "APPROVED".equals(decision)) {
+             decision = "MANUAL_REVIEW";
+        } else if (finalAssuranceScore < 40) {
+             decision = "REJECTED";
         }
 
         // Apply rules engine limits
@@ -159,7 +144,7 @@ public class AutomatedReportService {
         }
 
         // ── 5.5 Make DB the Single Source of Truth ───────────────────────────
-        mlClientService.updateFinalConstraints(applicationId, finalRiskScore, decision, finalConstrainedLoan);
+        mlClientService.updateFinalConstraints(applicationId, finalAssuranceScore, decision, finalConstrainedLoan);
 
         // ── 6. Build and return report ───────────────────────────────────────
         List<String> keyDrivers;
@@ -182,10 +167,10 @@ public class AutomatedReportService {
                 "APP-90" + (100 + applicationId),
                 (app != null ? app.getCompanyName() : "Borrower") + " (App #" + applicationId + ")",
                 finalConstrainedLoan,  // Show constraint-applied loan amount
-                (int) finalRiskScore,  // Show constraint-adjusted risk score
+                (int) finalAssuranceScore,  // Show constraint-adjusted assurance score
                 decision,
                 (String) fraud.get("fraud_probability_pct"),
-                (String) persona.get("archetype"), // Use archetype as efficiency proxy for overview
+                "N/A", // Default for dtiRatio
                 keyDrivers
         );
     }

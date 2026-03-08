@@ -137,4 +137,23 @@ public class ApplicationDataController {
             return ResponseEntity.ok(appRepo.save(app));
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    /** Update overall application status (e.g., Credit Manager verifying a MANUAL_REVIEW) */
+    @AuditAction("Updated application status decision")
+    @PreAuthorize("hasAnyRole('CREDIT_MANAGER','ADMIN')")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<CreditApplication> updateStatus(@PathVariable Long id, 
+                                                               @RequestBody java.util.Map<String, String> payload) {
+        return appRepo.findById(id).map(app -> {
+            String newStatus = payload.get("status");
+            app.setStatus(CreditApplication.ApplicationStatus.valueOf(newStatus));
+            
+            // Sync with ML prediction if the status means a final decision
+            if ("DECIDED".equals(newStatus) || "REJECTED".equals(newStatus)) {
+                mlClientService.updateFinalConstraints(id, null, "DECIDED".equals(newStatus) ? "APPROVED" : "REJECTED", null);
+            }
+            
+            return ResponseEntity.ok(appRepo.save(app));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

@@ -16,7 +16,6 @@ from schemas import (
     LoanRecommenderRequest, LoanRecommenderResponse,
     QualitativeRequest, QualitativeResponse,
     ResearchCrawlerRequest, ResearchCrawlerResponse,
-    PersonaAnalysisRequest, PersonaAnalysisResponse,
 )
 from models.risk_scorer import scorer
 from models.fraud_detector import detector
@@ -24,7 +23,6 @@ from models.revenue_forecaster import forecaster
 from models.loan_recommender import recommender
 from models.qualitative_adjuster import adjuster
 from models.research_crawler import crawler
-from models.persona_brain import brain
 
 app = FastAPI(
     title="Credit Appraisal ML Service",
@@ -46,7 +44,7 @@ logger = logging.getLogger("ml-service")
 @app.get("/health")
 def health():
     """Spring Boot pings this to verify the ML service is up."""
-    return {"status": "UP", "models": ["risk_scorer", "fraud_detector", "revenue_forecaster", "loan_recommender", "qualitative_adjuster", "research_crawler", "persona_brain"]}
+    return {"status": "UP", "models": ["risk_scorer", "fraud_detector", "revenue_forecaster", "loan_recommender", "qualitative_adjuster", "research_crawler"]}
 
 
 # ── Risk Score ────────────────────────────────────────────────────────────────
@@ -117,7 +115,7 @@ def predict_loan(req: LoanRecommenderRequest):
         result = recommender.predict(
             avg_monthly_balance=req.avg_monthly_balance,
             avg_monthly_credit=req.avg_monthly_credit,
-            risk_score=req.risk_score,
+            assurance_score=req.assurance_score,
             gst_variance_pct=req.gst_variance_pct,
             suspicious_tx_count=req.suspicious_tx_count,
         )
@@ -166,15 +164,3 @@ def crawl_research(req: ResearchCrawlerRequest):
         logger.error(f"Crawler error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# ── Persona Brain (Synthesis) ────────────────────────────────────────────────
-@app.post("/predict/persona", response_model=PersonaAnalysisResponse)
-def predict_persona(req: PersonaAnalysisRequest):
-    """
-    Synthesizes the 'Human' behind the numbers.
-    """
-    try:
-        result = brain.synthesize(req)
-        return PersonaAnalysisResponse(**result)
-    except Exception as e:
-        logger.error(f"Persona brain error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))

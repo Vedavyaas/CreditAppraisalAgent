@@ -24,11 +24,11 @@ def _generate_loan_training_data(n: int = 2000):
         gst_var = rng.uniform(0, 30)
         suspicious = rng.integers(0, 15)
 
-        # Target formula
+        # Target formula (Softer constraints so it doesn't zero out completely)
         base = avg_credit * 3
-        risk_factor = max(0.1, 1.0 - (risk_score / 100))
-        variance_penalty = max(0, 1 - (gst_var / 50))
-        suspicious_penalty = max(0, 1 - (suspicious / 30))
+        risk_factor = max(0.5, 1.0 - (risk_score / 200)) # Maximum 50% cut if risk is maxed out
+        variance_penalty = max(0.8, 1 - (gst_var / 50)) # Very soft cut
+        suspicious_penalty = max(0.7, 1 - (suspicious / 30))
         loan = base * risk_factor * variance_penalty * suspicious_penalty
 
         rows.append([avg_balance, avg_credit, risk_score, gst_var, suspicious])
@@ -63,8 +63,9 @@ class LoanRecommender:
         ])
         self.model.fit(X, y)
 
-    def predict(self, avg_monthly_balance, avg_monthly_credit, risk_score,
+    def predict(self, avg_monthly_balance, avg_monthly_credit, assurance_score,
                 gst_variance_pct, suspicious_tx_count) -> dict:
+        risk_score = 100.0 - assurance_score
         X = np.array([[
             avg_monthly_balance,
             avg_monthly_credit,

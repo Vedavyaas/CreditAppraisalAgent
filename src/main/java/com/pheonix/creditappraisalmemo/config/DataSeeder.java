@@ -261,10 +261,10 @@ public class DataSeeder implements ApplicationRunner {
 
         MlPredictionResult ml = new MlPredictionResult();
         ml.setApplicationId(appId);
-        ml.setRiskScore(round2(riskScore));
+        ml.setAssuranceScore(round2(riskScore));
         ml.setDecision(t.decision());
-        ml.setRiskConfidence(round2(0.7 + rng.nextDouble() * 0.25));
-        ml.setRiskBand(t.riskBand());
+        ml.setAssuranceConfidence(round2(0.7 + rng.nextDouble() * 0.25));
+        ml.setAssuranceBand(t.riskBand());
         ml.setFraudProbability(round2(fraud));
         ml.setFraudProbabilityPct(String.format("%.1f%%", fraud * 100));
         ml.setIsAnomalous(t.hasCircular());

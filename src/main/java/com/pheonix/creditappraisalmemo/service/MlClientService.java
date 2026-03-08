@@ -63,7 +63,7 @@ public class MlClientService {
                     baseUrl() + "/predict/risk", body, Map.class);
             return resp.getBody();
         } catch (Exception e) {
-            return Map.of("risk_score", 50.0, "decision", "MANUAL_REVIEW",
+            return Map.of("assurance_score", 50.0, "decision", "MANUAL_REVIEW",
                     "confidence", 0.5, "risk_band", "MEDIUM");
         }
     }
@@ -124,7 +124,7 @@ public class MlClientService {
     public Map<String, Object> predictLoan(Long applicationId,
                                             double avgBalance,
                                             double avgCredit,
-                                            double riskScore,
+                                            double assuranceScore,
                                             double gstVariance,
                                             int suspiciousTx) {
         try {
@@ -132,7 +132,7 @@ public class MlClientService {
                     "application_id", applicationId,
                     "avg_monthly_balance", avgBalance,
                     "avg_monthly_credit", avgCredit,
-                    "risk_score", riskScore,
+                    "assurance_score", assuranceScore,
                     "gst_variance_pct", gstVariance,
                     "suspicious_tx_count", suspiciousTx
             );
@@ -192,41 +192,6 @@ public class MlClientService {
         }
     }
 
-    /**
-     * Call /predict/persona — Performs wide human-centric synthesis.
-     */
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> predictPersona(Long applicationId,
-                                               String companyName,
-                                               double requestedAmount,
-                                               double riskScore,
-                                               double fraudProb,
-                                               double growthRate,
-                                               double sentiment,
-                                               int cibilScore,
-                                               int litigationCount,
-                                               double sectorGrowth) {
-        try {
-            Map<String, Object> body = Map.of(
-                    "application_id", applicationId,
-                    "company_name", companyName,
-                    "requested_amount", requestedAmount,
-                    "risk_score", riskScore,
-                    "fraud_probability", fraudProb,
-                    "growth_rate", growthRate,
-                    "sentiment_score", sentiment,
-                    "cibil_score", cibilScore,
-                    "litigation_count", litigationCount,
-                    "sector_growth", sectorGrowth
-            );
-            ResponseEntity<Map> resp = restTemplate.postForEntity(
-                    baseUrl() + "/predict/persona", body, Map.class);
-            return resp.getBody();
-        } catch (Exception e) {
-            return Map.of("archetype", "THE_STEADY_PILLAR", "human_narrative", "Unable to synthesize persona narrative.",
-                    "grit_score", 50.0, "intent_alignment", 50.0, "social_shadow", "NEUTRAL", "human_verdict", "CAUTIONARY");
-        }
-    }
 
     /** Save all ML predictions back to the DB for caching. */
 
@@ -234,8 +199,7 @@ public class MlClientService {
                                                Map<String, Object> risk,
                                                Map<String, Object> fraud,
                                                Map<String, Object> forecast,
-                                               Map<String, Object> loan,
-                                               Map<String, Object> persona) {
+                                               Map<String, Object> loan) {
         MlPredictionResult result = predictionRepository
                 .findByApplicationId(applicationId)
                 .orElse(new MlPredictionResult());
@@ -243,10 +207,10 @@ public class MlClientService {
         result.setApplicationId(applicationId);
 
         if (risk != null) {
-            result.setRiskScore(toDouble(risk.get("risk_score")));
+            result.setAssuranceScore(toDouble(risk.get("assurance_score")));
             result.setDecision((String) risk.get("decision"));
-            result.setRiskConfidence(toDouble(risk.get("confidence")));
-            result.setRiskBand((String) risk.get("risk_band"));
+            result.setAssuranceConfidence(toDouble(risk.get("confidence")));
+            result.setAssuranceBand((String) risk.get("risk_band"));
         }
         if (fraud != null) {
             result.setFraudProbability(toDouble(fraud.get("fraud_probability")));
@@ -264,27 +228,16 @@ public class MlClientService {
             result.setEmiEstimate(toDouble(loan.get("emi_estimate")));
             result.setRecommendationTier((String) loan.get("recommendation_tier"));
         }
-        if (persona != null) {
-            result.setPersonaArchetype((String) persona.get("archetype"));
-            result.setPersonaNarrative((String) persona.get("human_narrative"));
-            result.setPersonaGritScore(toDouble(persona.get("grit_score")));
-            result.setPersonaIntentAlignment(toDouble(persona.get("intent_alignment")));
-            result.setPersonaSocialShadow((String) persona.get("social_shadow"));
-            result.setPersonaVerdict((String) persona.get("human_verdict"));
-            // Neural Network Constraints
-            result.setPersonaRiskModifier(toDouble(persona.get("risk_modifier")));
-            result.setPersonaLimitMultiplier(toDouble(persona.get("limit_multiplier")));
-        }
 
         return predictionRepository.save(result);
     }
 
     /** Update Final Rule-Engine and Neural-Network Constraints to make DB Single Source of Truth. */
-    public void updateFinalConstraints(Long applicationId, double finalRiskScore, String finalDecision, double finalLoan) {
+    public void updateFinalConstraints(Long applicationId, Double finalAssuranceScore, String finalDecision, Double finalLoan) {
         predictionRepository.findByApplicationId(applicationId).ifPresent(p -> {
-            p.setRiskScore(finalRiskScore);
-            p.setDecision(finalDecision);
-            p.setRecommendedMaxLoan(finalLoan);
+            if (finalAssuranceScore != null) p.setAssuranceScore(finalAssuranceScore);
+            if (finalDecision != null) p.setDecision(finalDecision);
+            if (finalLoan != null) p.setRecommendedMaxLoan(finalLoan);
             predictionRepository.save(p);
         });
     }
