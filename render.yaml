@@ -25,6 +25,8 @@ services:
           property: url
       - key: JWT_SECRET
         value: kBrEkn/5ZoZJtAAxT5MLMtNcLz7yr+gsbTrWxmEezko3hRf2zuwkpTq1wvPeXkTu
+      - key: FRONTEND_URL
+        value: https://cam-frontend.onrender.com
 
   # 3. React Frontend Dashboard (Static Site)
   - type: web
