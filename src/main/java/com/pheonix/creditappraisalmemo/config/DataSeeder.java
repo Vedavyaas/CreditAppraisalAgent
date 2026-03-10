@@ -16,19 +16,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 /**
- * DataSeeder — populates the H2 database with realistic Indian corporate
- * credit appraisal data on every application startup.
- *
- * Creates:
- *  - 8 CreditApplications (real Indian companies, diverse industries)
- *  - 12 GST periods (GSTR-3B vs 2A) per application
- *  - 30 bank transactions per application (with realistic cash flow patterns)
- *  - Pre-computed MlPredictionResult for each application
- *  - QualitativeNote for most applications
- *  - 6 system users (one per role)
+ * DataSeeder — populates the database with realistic Indian corporate
+ * credit appraisal data. Updated for persistent PostgreSQL storage to 
+ * prevent duplication on restarts.
  */
 @Component
 public class DataSeeder implements ApplicationRunner {
@@ -74,22 +68,11 @@ public class DataSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (userRepo.count() == 0) {
-            log.info("DataSeeder: seeding users...");
-            seedUsers();
-        }
-
-        if (appRepo.count() > 0) {
-            log.info("DataSeeder: application data already present — skipping application seeding.");
-        } else {
-            log.info("DataSeeder: seeding database with demo applications and financials...");
-            seedApplications();
-        }
-
-        if (rulesRepo.count() == 0) {
-            log.info("DataSeeder: seeding default rules configuration...");
-            seedRulesConfig();
-        }
+        log.info("DataSeeder: checking database state for seeding...");
+        
+        seedUsers();
+        seedApplications();
+        seedRulesConfig();
 
         log.info("DataSeeder: seeding process complete.");
     }
@@ -135,6 +118,14 @@ public class DataSeeder implements ApplicationRunner {
         Random rng = new Random(42);
 
         for (AppTemplate t : TEMPLATES) {
+            // Check if application already exists by CIN
+            if (appRepo.findByCin(t.cin()).isPresent()) {
+                log.debug("DataSeeder: Skipping application {} as CIN already exists.", t.name());
+                continue;
+            }
+
+            log.info("DataSeeder: seeding application: {}", t.name());
+            
             // 1. CreditApplication
             CreditApplication app = new CreditApplication();
             app.setCompanyName(t.name());
@@ -180,11 +171,8 @@ public class DataSeeder implements ApplicationRunner {
             "2024-04","2024-05","2024-06","2024-07","2024-08","2024-09",
             "2024-10","2024-11","2024-12","2025-01","2025-02","2025-03"
         };
-        double balance = t.revenueBaseLakh() * 1_00_000;
         for (String period : PERIODS) {
-            // Gentle random growth (±10%) on base
             double g3b = t.revenueBaseLakh() * (0.9 + rng.nextDouble() * 0.2) * 1_00_000;
-            // 2A is lower by variancePct ± noise — and the first two periods have circular flag
             double varianceFactor = (t.variancePct() + rng.nextDouble() * 3) / 100.0;
             double g2a = g3b * (1.0 - varianceFactor);
             boolean circular = t.hasCircular() && varianceFactor > 0.15;
@@ -206,7 +194,7 @@ public class DataSeeder implements ApplicationRunner {
     // ── Bank seeding ──────────────────────────────────────────────────────────
     private void seedBank(Long appId, AppTemplate t, Random rng) {
         LocalDate startDate = LocalDate.of(2024, 4, 1);
-        double balance = t.revenueBaseLakh() * 3 * 1_00_000;  // opening ~3months revenue
+        double balance = t.revenueBaseLakh() * 3 * 1_00_000; 
 
         String[] CREDIT_DESC = {
             "RTGS from Customer", "NEFT Receivable", "Export Proceeds", "Advance Payment",
@@ -224,8 +212,7 @@ public class DataSeeder implements ApplicationRunner {
 
             double amount = t.revenueBaseLakh() * 0.5 * 1_00_000 * (0.5 + rng.nextDouble());
             if (suspicious) {
-                // Circular: same amount credited then debited same day
-                amount = Math.round(amount / 10_000.0) * 10_000.0; // round figure = suspicious
+                amount = Math.round(amount / 10_000.0) * 10_000.0; 
             }
 
             if (isCredit) balance += amount;
@@ -250,7 +237,7 @@ public class DataSeeder implements ApplicationRunner {
         double fraud      = t.hasCircular() ? 0.25 + rng.nextDouble() * 0.15 : rng.nextDouble() * 0.06;
         String trend      = switch (t.riskBand()) { case "LOW" -> "GROWING"; case "HIGH" -> "DECLINING"; default -> "STABLE"; };
         double growth     = switch (t.riskBand()) { case "LOW" -> 8 + rng.nextDouble() * 5; case "HIGH" -> -(5 + rng.nextDouble() * 5); default -> rng.nextDouble() * 4 - 1; };
-        double maxLoan    = t.revenueBaseLakh() * 12 * (riskScore / 100.0) * 1_00_000 * 0.5; // 50% of year's revenue adjusted for risk
+        double maxLoan    = t.revenueBaseLakh() * 12 * (riskScore / 100.0) * 1_00_000 * 0.5;
         int tenor         = switch (t.riskBand()) { case "LOW" -> 60; case "HIGH" -> 24; default -> 36; };
         double emi        = maxLoan > 0 ? (maxLoan * 0.09 / 12) / (1 - Math.pow(1 + 0.09/12, -tenor)) : 0;
         String tier       = switch (t.riskBand()) { case "LOW" -> "PRIME"; case "HIGH" -> "RESTRICTED"; default -> "STANDARD"; };
@@ -336,7 +323,6 @@ public class DataSeeder implements ApplicationRunner {
 
     // ── Web Research seeding ──────────────────────────────────────────────────
     private void seedResearch(Long appId, AppTemplate t) {
-        // Realistic Indian company research data per industry
         String[] positiveNews = switch (t.industry()) {
             case "IT Services"     -> new String[]{
                 t.name().split(" ")[0] + " bags $2M contract with UAE government for digital services",
@@ -394,9 +380,9 @@ public class DataSeeder implements ApplicationRunner {
         if (t.hasCircular()) sentiment = "NEGATIVE";
 
         int cibil = switch (t.riskBand()) {
-            case "LOW"  -> 720 + (int)(Math.random() * 40);  // 720-760
-            case "HIGH" -> 600 + (int)(Math.random() * 60);  // 600-660
-            default     -> 670 + (int)(Math.random() * 40);  // 670-710
+            case "LOW"  -> 720 + (int)(Math.random() * 40);  
+            case "HIGH" -> 600 + (int)(Math.random() * 60);  
+            default     -> 670 + (int)(Math.random() * 40);  
         };
         String cibilGrade = cibil >= 720 ? "A" : cibil >= 680 ? "B" : cibil >= 640 ? "C" : "D";
 
@@ -458,6 +444,7 @@ public class DataSeeder implements ApplicationRunner {
     private static double round2(double v) { return Math.round(v * 100.0) / 100.0; }
 
     private void seedUsers() {
+        log.info("DataSeeder: checking users...");
         String password = encoder.encode("password");
 
         createUser("System Admin", "admin@test.com", Role.ADMIN, password);
@@ -469,12 +456,17 @@ public class DataSeeder implements ApplicationRunner {
     }
 
     private void createUser(String name, String email, Role role, String password) {
+        if (userRepo.findByEmail(email).isPresent()) {
+            log.debug("DataSeeder: User {} already exists.", email);
+            return;
+        }
         UserDetailsEntity u = new UserDetailsEntity();
         u.setName(name);
         u.setEmail(email);
         u.setPassword(password);
         u.setRole(role);
         userRepo.save(u);
+        log.info("DataSeeder: Created user: {}", email);
     }
 
     private void seedScores(Long appId, AppTemplate t, Random rng) {
@@ -503,6 +495,11 @@ public class DataSeeder implements ApplicationRunner {
     }
 
     private void seedRulesConfig() {
+        if (rulesRepo.count() > 0) {
+            log.info("DataSeeder: Rules configuration already exists.");
+            return;
+        }
+        log.info("DataSeeder: seeding default rules configuration...");
         RulesConfig config = new RulesConfig();
         config.setGstVarianceThreshold(0.15);
         config.setMaxAutoApprovalLoanAmount(5_000_000.0);

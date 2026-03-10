@@ -5,7 +5,7 @@ services:
     env: docker
     dockerfilePath: Dockerfile
     rootDir: ./ml-service
-    region: ohio
+    region: oregon
     plan: free
     healthCheckPath: /health
 
@@ -15,7 +15,7 @@ services:
     env: docker
     dockerfilePath: Dockerfile
     rootDir: .
-    region: ohio
+    region: oregon
     plan: free
     healthCheckPath: /api/health
     envVars:
@@ -25,9 +25,9 @@ services:
           type: web
           property: url
       
-      # Database Configuration (External Render Postgres)
+      # Database Configuration (External Render Postgres in Oregon)
       - key: DB_URL
-        value: jdbc:postgresql://dpg-d6o4f74r85hc73din2ug-a:5432/mydb_s5ix
+        value: jdbc:postgresql://dpg-d6o4f74r85hc73din2ug-a.oregon-postgres.render.com:5432/mydb_s5ix
       - key: DB_USERNAME
         value: mydb_s5ix_user
       - key: DB_PASSWORD
