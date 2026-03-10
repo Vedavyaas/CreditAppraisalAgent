@@ -8,7 +8,7 @@ services:
     region: ohio
     plan: free
 
-  # 2. Java Backend (Spring Boot with H2)
+  # 2. Java Backend & Frontend (Spring Boot serving Static Files)
   - type: web
     name: cam-java-backend
     env: docker
@@ -25,22 +25,3 @@ services:
           property: url
       - key: JWT_SECRET
         value: kBrEkn/5ZoZJtAAxT5MLMtNcLz7yr+gsbTrWxmEezko3hRf2zuwkpTq1wvPeXkTu
-      - key: FRONTEND_URL
-        value: https://cam-frontend.onrender.com
-
-  # 3. React Frontend Dashboard (Static Site)
-  - type: web
-    name: cam-frontend
-    env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    rootDir: frontend
-    region: ohio
-    plan: free
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        value: https://cam-java-backend.onrender.com
