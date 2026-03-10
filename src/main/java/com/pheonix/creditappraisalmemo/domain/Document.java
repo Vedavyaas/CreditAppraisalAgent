@@ -40,6 +40,9 @@ public class Document {
         BOARD_MINUTES,
         RATING_REPORT,
         SHAREHOLDING_PATTERN,
+        ALM,
+        BORROWING_PROFILE,
+        PORTFOLIO_CUTS,
         OTHER
     }
 

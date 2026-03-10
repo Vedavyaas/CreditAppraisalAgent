@@ -21,6 +21,7 @@ public class ApplicationDataController {
     private final WebResearchRepository         researchRepo;
     private final DocumentRepository            docRepo;
     private final MlClientService               mlClientService;
+    private final PersonaSimulationRepository   personaRepo;
 
     public ApplicationDataController(GstEntryRepository gstRepo,
                                      BankTransactionRepository bankRepo,
@@ -28,7 +29,8 @@ public class ApplicationDataController {
                                      CreditApplicationRepository appRepo,
                                      WebResearchRepository researchRepo,
                                      DocumentRepository docRepo,
-                                     MlClientService mlClientService) {
+                                     MlClientService mlClientService,
+                                     PersonaSimulationRepository personaRepo) {
         this.gstRepo      = gstRepo;
         this.bankRepo     = bankRepo;
         this.reportService = reportService;
@@ -36,6 +38,7 @@ public class ApplicationDataController {
         this.researchRepo = researchRepo;
         this.docRepo      = docRepo;
         this.mlClientService = mlClientService;
+        this.personaRepo  = personaRepo;
     }
 
     /** List all credit applications — used by DD picker and portfolio views */
@@ -155,5 +158,31 @@ public class ApplicationDataController {
             
             return ResponseEntity.ok(appRepo.save(app));
         }).orElse(ResponseEntity.notFound().build());
+    }
+    
+    /** Trigger Persona Simulation */
+    @AuditAction("Simulated cognitive persona response / Digital Twin generated")
+    @PostMapping("/{id}/persona-simulation")
+    public ResponseEntity<PersonaSimulationResult> simulatePersona(@PathVariable Long id, @RequestBody java.util.Map<String, Object> qualitativeParams) {
+        return appRepo.findById(id).map(app -> {
+            int capacity = qualitativeParams.containsKey("capacityUtilization") ? Integer.parseInt(qualitativeParams.get("capacityUtilization").toString()) : 75;
+            String assessment = qualitativeParams.containsKey("promoterAssessment") ? qualitativeParams.get("promoterAssessment").toString() : "NEUTRAL";
+            boolean legal = qualitativeParams.containsKey("legalConcerns") && Boolean.parseBoolean(qualitativeParams.get("legalConcerns").toString());
+            
+            PersonaSimulationResult res = mlClientService.simulatePersona(
+                app.getId(), app.getCompanyName(), app.getIndustry(), app.getTurnover(),
+                capacity, assessment, legal);
+             
+            if (res == null) return ResponseEntity.internalServerError().<PersonaSimulationResult>build();
+            return ResponseEntity.ok(res);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Retrieve existing Persona Simulation */
+    @GetMapping("/{id}/persona-simulation")
+    public ResponseEntity<PersonaSimulationResult> getPersonaSimulation(@PathVariable Long id) {
+        return personaRepo.findByApplicationId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }

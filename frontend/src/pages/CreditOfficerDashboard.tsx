@@ -45,9 +45,14 @@ export const CreditOfficerDashboard: React.FC = () => {
     const [newAppForm, setNewAppForm] = useState({
         companyName: '',
         cin: '',
+        pan: '',
         gstNumber: '',
         industry: '',
         city: '',
+        turnover: 0,
+        loanType: '',
+        loanTenure: 36,
+        loanInterest: 0,
         requestedAmount: 0,
     });
     const [isCreatingApp, setIsCreatingApp] = useState(false);
@@ -178,9 +183,14 @@ export const CreditOfficerDashboard: React.FC = () => {
             setNewAppForm({
                 companyName: '',
                 cin: '',
+                pan: '',
                 gstNumber: '',
                 industry: '',
                 city: '',
+                turnover: 0,
+                loanType: '',
+                loanTenure: 36,
+                loanInterest: 0,
                 requestedAmount: 0,
             });
             showToast(`New application created for ${res.data.companyName}`);
@@ -730,9 +740,14 @@ export const CreditOfficerDashboard: React.FC = () => {
                                 onClick={() => setNewAppForm({
                                     companyName: 'RELIANCE INDUSTRIES LIMITED',
                                     cin: 'L17110MH1973PLC019786',
+                                    pan: 'RELI12345A',
                                     gstNumber: '27AAACR1234A1Z1',
                                     industry: 'Manufacturing',
                                     city: 'Mumbai',
+                                    turnover: 500000000,
+                                    loanType: 'Term Loan',
+                                    loanTenure: 60,
+                                    loanInterest: 8.5,
                                     requestedAmount: 10000000
                                 })}
                                 className="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 rounded-lg text-[10px] font-black uppercase hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
@@ -804,15 +819,74 @@ export const CreditOfficerDashboard: React.FC = () => {
                                         placeholder="e.g. Bengaluru"
                                     />
                                 </div>
-                                <div className="col-span-2">
+                                <div>
+                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">PAN Number</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newAppForm.pan}
+                                        onChange={e => setNewAppForm({ ...newAppForm, pan: e.target.value })}
+                                        className="w-full bg-slate-100 border-none rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600 transition-all font-mono"
+                                        placeholder="ABCDE1234F"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Annual Turnover (₹)</label>
+                                    <input
+                                        required
+                                        type="number"
+                                        value={newAppForm.turnover || ''}
+                                        onChange={e => setNewAppForm({ ...newAppForm, turnover: Number(e.target.value) })}
+                                        className="w-full bg-slate-100 border-none rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600 transition-all font-mono"
+                                        placeholder="10000000"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Loan Type</label>
+                                    <select
+                                        required
+                                        value={newAppForm.loanType}
+                                        onChange={e => setNewAppForm({ ...newAppForm, loanType: e.target.value })}
+                                        className="w-full bg-slate-100 border-none rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600 transition-all"
+                                    >
+                                        <option value="">Select Loan Type</option>
+                                        <option value="Term Loan">Term Loan</option>
+                                        <option value="Working Capital">Working Capital</option>
+                                        <option value="Equipment Finance">Equipment Finance</option>
+                                    </select>
+                                </div>
+                                <div>
                                     <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Requested Loan Amount (₹)</label>
                                     <input
                                         required
                                         type="number"
-                                        value={newAppForm.requestedAmount}
+                                        value={newAppForm.requestedAmount || ''}
                                         onChange={e => setNewAppForm({ ...newAppForm, requestedAmount: Number(e.target.value) })}
                                         className="w-full bg-slate-100 border-none rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600 transition-all"
                                         placeholder="5000000"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tenure (Months)</label>
+                                    <input
+                                        required
+                                        type="number"
+                                        value={newAppForm.loanTenure || ''}
+                                        onChange={e => setNewAppForm({ ...newAppForm, loanTenure: Number(e.target.value) })}
+                                        className="w-full bg-slate-100 border-none rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600 transition-all"
+                                        placeholder="36"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Expected Interest (%)</label>
+                                    <input
+                                        required
+                                        type="number"
+                                        step="0.1"
+                                        value={newAppForm.loanInterest || ''}
+                                        onChange={e => setNewAppForm({ ...newAppForm, loanInterest: Number(e.target.value) })}
+                                        className="w-full bg-slate-100 border-none rounded-2xl px-5 py-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600 transition-all"
+                                        placeholder="10.5"
                                     />
                                 </div>
                             </div>

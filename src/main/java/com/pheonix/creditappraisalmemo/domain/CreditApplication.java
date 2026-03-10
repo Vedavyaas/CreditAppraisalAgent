@@ -15,9 +15,15 @@ public class CreditApplication {
     private String companyName;
 
     private String cin;            // Ministry of Corporate Affairs ID
+    private String pan;
     private String gstNumber;
     private String industry;
     private String city;
+    private Double turnover;
+
+    private String loanType;
+    private Integer loanTenure;
+    private Double loanInterest;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -70,6 +76,21 @@ public class CreditApplication {
 
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+
+    public String getPan() { return pan; }
+    public void setPan(String pan) { this.pan = pan; }
+
+    public Double getTurnover() { return turnover; }
+    public void setTurnover(Double turnover) { this.turnover = turnover; }
+
+    public String getLoanType() { return loanType; }
+    public void setLoanType(String loanType) { this.loanType = loanType; }
+
+    public Integer getLoanTenure() { return loanTenure; }
+    public void setLoanTenure(Integer loanTenure) { this.loanTenure = loanTenure; }
+
+    public Double getLoanInterest() { return loanInterest; }
+    public void setLoanInterest(Double loanInterest) { this.loanInterest = loanInterest; }
 
     public ApplicationStatus getStatus() { return status; }
     public void setStatus(ApplicationStatus status) { this.status = status; }

@@ -19,27 +19,40 @@ export const RiskAnalystDashboard: React.FC = () => {
     const [mlPred, setMlPred] = useState<any>(null);
     const [ddNote, setDdNote] = useState<any>(null);
     const [researchData, setResearchData] = useState<any>(null);
+    const [personaData, setPersonaData] = useState<any>(null);
     const [selectedScore, setSelectedScore] = useState<any>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
-    const [activeTab, setActiveTab] = useState<'gst' | 'bank' | 'research' | 'ml'>('ml');
+    const [activeTab, setActiveTab] = useState<'ml' | 'gst' | 'bank' | 'research' | 'persona'>('ml');
+
+    const [isSimulating, setIsSimulating] = useState(false);
 
     const loadAppDetails = useCallback(async (app: any) => {
         setLoadingDetails(true);
         setSelectedApp(app);
         const id = app.id;
         try {
-            const [gstRes, bankRes, mlRes, ddRes, researchRes, scoreRes] = await Promise.allSettled([
+            const [gstRes, bankRes, mlRes, ddRes, researchRes, scoreRes, personaRes] = await Promise.allSettled([
                 apiClient.get(`/applications/${id}/gst`),
                 apiClient.get(`/applications/${id}/bank`),
                 apiClient.get(`/admin/ml-predictions/${id}`),
                 apiClient.get(`/applications/${id}/due-diligence`),
                 apiClient.get(`/applications/${id}/research`),
                 apiClient.get(`/admin/credit-scores/${id}`),
+                apiClient.get(`/applications/${id}/persona-simulation`),
             ]);
             if (gstRes.status === 'fulfilled') setGstEntries(gstRes.value.data);
             if (bankRes.status === 'fulfilled') setBankEntries(bankRes.value.data);
             if (mlRes.status === 'fulfilled') setMlPred(mlRes.value.data);
             if (ddRes.status === 'fulfilled') setDdNote(ddRes.value.data);
+            if (personaRes.status === 'fulfilled' && personaRes.value.status === 200) {
+                const pd = personaRes.value.data;
+                if (pd.scenariosTestedJson) pd.scenariosTested = JSON.parse(pd.scenariosTestedJson);
+                if (pd.simulatedResponsesJson) pd.simulatedResponses = JSON.parse(pd.simulatedResponsesJson);
+                if (pd.simulatedPressuresJson) pd.simulatedPressures = JSON.parse(pd.simulatedPressuresJson);
+                setPersonaData(pd);
+            } else {
+                setPersonaData(null);
+            }
             if (researchRes.status === 'fulfilled') {
                 const r = researchRes.value.data;
                 if (r.newsItemsJson) {
@@ -69,7 +82,30 @@ export const RiskAnalystDashboard: React.FC = () => {
         { id: 'gst', label: 'GST Data' },
         { id: 'bank', label: 'Bank Data' },
         { id: 'research', label: '🔍 Research Agent' },
+        { id: 'persona', label: '🧠 Persona Brain' },
     ] as const;
+
+    const runPersonaSimulation = async () => {
+        if (!selectedApp) return;
+        setIsSimulating(true);
+        try {
+            const res = await apiClient.post(`/applications/${selectedApp.id}/persona-simulation`, {
+                capacityUtilization: ddNote?.capacityUtilizationPct || 75,
+                promoterAssessment: ddNote?.promoterAssessment || 'NEUTRAL',
+                legalConcerns: ddNote?.legalConcernsNoted ? true : false
+            });
+            const pd = res.data;
+            if (pd.scenariosTestedJson) pd.scenariosTested = JSON.parse(pd.scenariosTestedJson);
+            if (pd.simulatedResponsesJson) pd.simulatedResponses = JSON.parse(pd.simulatedResponsesJson);
+            if (pd.simulatedPressuresJson) pd.simulatedPressures = JSON.parse(pd.simulatedPressuresJson);
+            setPersonaData(pd);
+        } catch (err) {
+            console.error("Simulation failed", err);
+        } finally {
+            setIsSimulating(false);
+        }
+    };
+
     const renderMLSignals = () => (
         <div className="space-y-4">
             {mlPred ? (
@@ -343,6 +379,90 @@ export const RiskAnalystDashboard: React.FC = () => {
             </div>
         );
     };
+
+    const renderPersona = () => {
+        if (!personaData) {
+            return (
+                <div className="py-12 text-center text-slate-400">
+                    <div className="text-4xl mb-3">🧠</div>
+                    <p className="font-semibold mb-4">No Cognitive Simulation Profile generated.</p>
+                    <button
+                        onClick={runPersonaSimulation}
+                        disabled={isSimulating}
+                        className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-sm transition-all"
+                    >
+                        {isSimulating ? 'Simulating Digital Twin...' : 'Generate AI Persona Simulation'}
+                    </button>
+                    <p className="text-xs text-slate-400 mt-4 max-w-lg mx-auto">
+                        This will generate a Digital Twin of the borrower's management team based on field notes and macro-pressures, testing their response to extreme scenarios.
+                    </p>
+                </div>
+            );
+        }
+
+        return (
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h4 className="text-sm font-black text-slate-800 flex items-center">
+                            <span className="text-indigo-600 mr-2 text-lg">🧠</span>
+                            Cognitive Profile: <span className="text-indigo-600 ml-2">{personaData.cognitiveProfile}</span>
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-1">Based on Qualitative Field Observations & Industry Stressors</p>
+                    </div>
+                    <button
+                        onClick={runPersonaSimulation}
+                        disabled={isSimulating}
+                        className="px-4 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-xs"
+                    >
+                        {isSimulating ? 'Simulating...' : 'Re-Run Simulation'}
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Synthesized Pressures</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            {personaData.simulatedPressures?.map((p: string, i: number) => (
+                                <li key={i} className="text-sm text-slate-700 font-medium">{p}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-center items-center text-center">
+                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Behavioral Resilience Score</p>
+                        <p className={`text-4xl font-black ${personaData.behavioralResilienceScore > 70 ? 'text-emerald-600' : personaData.behavioralResilienceScore > 40 ? 'text-amber-600' : 'text-red-600'}`}>
+                            {personaData.behavioralResilienceScore?.toFixed(1)} / 100
+                        </p>
+                        <span className={`mt-2 text-xs font-bold px-2 py-0.5 rounded border ${personaData.sentiment === 'HIGH_RESILIENCE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : personaData.sentiment === 'LOW_RESILIENCE' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                            {personaData.sentiment}
+                        </span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Hypothetical Scenario Stress-Test</h4>
+                    <div className="space-y-4">
+                        {personaData.simulatedResponses?.map((resp: any, i: number) => {
+                            const scenario = personaData.scenariosTested?.find((s: any) => s.id === resp.scenario_id);
+                            return (
+                                <div key={i} className="border border-slate-200 rounded-xl overflow-hidden">
+                                    <div className="bg-slate-100 p-3 border-b border-slate-200">
+                                        <p className="text-xs font-black text-slate-600 uppercase mb-1">Scenario {resp.scenario_id}</p>
+                                        <p className="text-sm font-semibold text-slate-800">{scenario?.question}</p>
+                                    </div>
+                                    <div className="bg-white p-4">
+                                        <p className="text-xs font-bold text-indigo-500 uppercase mb-1">Simulated Response (LLM Generated)</p>
+                                        <p className="text-sm text-slate-700 leading-relaxed font-mono">"{resp.response}"</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
             {/* Top Nav */}
@@ -420,6 +540,7 @@ export const RiskAnalystDashboard: React.FC = () => {
                                     {activeTab === 'gst' && renderGST()}
                                     {activeTab === 'bank' && renderBank()}
                                     {activeTab === 'research' && renderResearch()}
+                                    {activeTab === 'persona' && renderPersona()}
                                 </div>
                             </MacWindow>
                         </>

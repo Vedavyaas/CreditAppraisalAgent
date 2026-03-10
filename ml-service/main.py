@@ -23,6 +23,7 @@ from models.revenue_forecaster import forecaster
 from models.loan_recommender import recommender
 from models.qualitative_adjuster import adjuster
 from models.research_crawler import crawler
+from models.persona_brain import brain_simulator
 
 app = FastAPI(
     title="Credit Appraisal ML Service",
@@ -44,7 +45,7 @@ logger = logging.getLogger("ml-service")
 @app.get("/health")
 def health():
     """Spring Boot pings this to verify the ML service is up."""
-    return {"status": "UP", "models": ["risk_scorer", "fraud_detector", "revenue_forecaster", "loan_recommender", "qualitative_adjuster", "research_crawler"]}
+    return {"status": "UP", "models": ["risk_scorer", "fraud_detector", "revenue_forecaster", "loan_recommender", "qualitative_adjuster", "research_crawler", "persona_brain"]}
 
 
 # ── Risk Score ────────────────────────────────────────────────────────────────
@@ -148,6 +149,7 @@ def predict_qualitative(req: QualitativeRequest):
 
 
 # ── Web Research Crawler ────────────────────────────────────────────────────
+# ── Web Research Crawler ────────────────────────────────────────────────────
 @app.post("/crawl/research", response_model=ResearchCrawlerResponse)
 def crawl_research(req: ResearchCrawlerRequest):
     """
@@ -163,4 +165,28 @@ def crawl_research(req: ResearchCrawlerRequest):
     except Exception as e:
         logger.error(f"Crawler error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ── Persona / Cognitive Brain Simulation ────────────────────────────────────
+from schemas import PersonaSimulationRequest, PersonaSimulationResponse
+
+@app.post("/predict/persona-simulation", response_model=PersonaSimulationResponse)
+def simulate_persona(req: PersonaSimulationRequest):
+    """
+    Simulates a 'Digital Twin' of the borrower to stress-test their operational resilience.
+    Uses contextual data to build a psychological profile and evaluates their likely responses.
+    """
+    try:
+        result = brain_simulator.simulate(
+            company_name=req.company_name,
+            sector=req.sector,
+            turnover=req.turnover,
+            capacity_utilization=req.capacity_utilization_pct,
+            promoter_assessment=req.promoter_assessment,
+            legal_concerns=req.has_legal_concerns
+        )
+        return PersonaSimulationResponse(application_id=req.application_id, **result)
+    except Exception as e:
+        logger.error(f"Persona Simulator error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 

@@ -136,9 +136,13 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ applicationId, onUploadS
                                     onChange={(e) => setDocType(e.target.value)}
                                     className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 font-medium shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                                 >
+                                    <option value="ALM">ALM (Asset-Liability Management)</option>
+                                    <option value="SHAREHOLDING_PATTERN">Shareholding Pattern</option>
+                                    <option value="BORROWING_PROFILE">Borrowing Profile</option>
+                                    <option value="ANNUAL_REPORT">Annual Reports (P&L, Cashflow, Balance Sheet)</option>
+                                    <option value="PORTFOLIO_CUTS">Portfolio Cuts/Performance Data</option>
                                     <option value="GST_RETURN">GST Return (CSV)</option>
                                     <option value="BANK_STATEMENT">Bank Statement (CSV)</option>
-                                    <option value="ANNUAL_REPORT">Annual Report (PDF)</option>
                                     <option value="LEGAL_NOTICE">Legal Notice (PDF)</option>
                                     <option value="RATING_REPORT">Rating Report (PDF)</option>
                                     <option value="SANCTION_LETTER">Sanction Letter (PDF)</option>

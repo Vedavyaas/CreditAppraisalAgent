@@ -126,3 +126,26 @@ class ResearchCrawlerResponse(BaseModel):
     source: str
 
 
+# ── Persona Simulation (Digital Twin) ───────────────────────────────────────
+class PersonaSimulationRequest(BaseModel):
+    application_id: int
+    company_name: str
+    sector: str
+    turnover: float
+    capacity_utilization_pct: int
+    promoter_assessment: str
+    has_legal_concerns: bool
+
+class SimulatedScenarioResponse(BaseModel):
+    scenario_id: str
+    response: str
+
+class PersonaSimulationResponse(BaseModel):
+    application_id: int
+    cognitive_profile: str
+    simulated_pressures: List[str]
+    scenarios_tested: List[dict]
+    simulated_responses: List[SimulatedScenarioResponse]
+    behavioral_resilience_score: float
+    assurance_adjustment: float
+    sentiment: str

@@ -22,14 +22,17 @@ public class MlClientService {
     private final RulesService rulesService;
     private final MlPredictionRepository predictionRepository;
     private final WebResearchRepository researchRepository;
+    private final PersonaSimulationRepository personaRepository;
 
     public MlClientService(RulesService rulesService,
                            MlPredictionRepository predictionRepository,
-                           WebResearchRepository researchRepository) {
+                           WebResearchRepository researchRepository,
+                           PersonaSimulationRepository personaRepository) {
         this.restTemplate = new RestTemplate();
         this.rulesService = rulesService;
         this.predictionRepository = predictionRepository;
         this.researchRepository = researchRepository;
+        this.personaRepository = personaRepository;
     }
 
     private String baseUrl() {
@@ -285,6 +288,46 @@ public class MlClientService {
         result.setCrawledAt(java.time.LocalDateTime.now());
 
         return researchRepository.save(result);
+    }
+    
+    /** Call /predict/persona-simulation - Digital Twin Persona */
+    @SuppressWarnings("unchecked")
+    public PersonaSimulationResult simulatePersona(Long applicationId, String companyName, String sector, Double turnover, int capacityUtilization, String promoterAssessment, boolean hasLegalConcerns) {
+        try {
+            Map<String, Object> body = Map.of(
+                    "application_id", applicationId,
+                    "company_name", companyName != null ? companyName : "Unknown",
+                    "sector", sector != null ? sector : "Unknown",
+                    "turnover", turnover != null ? turnover : 0.0,
+                    "capacity_utilization_pct", capacityUtilization,
+                    "promoter_assessment", promoterAssessment != null ? promoterAssessment : "NEUTRAL",
+                    "has_legal_concerns", hasLegalConcerns
+            );
+            ResponseEntity<Map> resp = restTemplate.postForEntity(
+                    baseUrl() + "/predict/persona-simulation", body, Map.class);
+            Map<String, Object> data = resp.getBody();
+            if (data == null) throw new RuntimeException("Null response");
+
+            PersonaSimulationResult entity = personaRepository.findByApplicationId(applicationId).orElse(new PersonaSimulationResult());
+            entity.setApplicationId(applicationId);
+            entity.setCognitiveProfile((String) data.get("cognitive_profile"));
+            
+            ObjectMapper om = new ObjectMapper();
+            entity.setSimulatedPressuresJson(om.writeValueAsString(data.get("simulated_pressures")));
+            entity.setScenariosTestedJson(om.writeValueAsString(data.get("scenarios_tested")));
+            entity.setSimulatedResponsesJson(om.writeValueAsString(data.get("simulated_responses")));
+            
+            entity.setBehavioralResilienceScore(toDouble(data.get("behavioral_resilience_score")));
+            entity.setAssuranceAdjustment(toDouble(data.get("assurance_adjustment")));
+            entity.setSentiment((String) data.get("sentiment"));
+            entity.setSimulatedAt(java.time.LocalDateTime.now());
+            
+            return personaRepository.save(entity);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Handle missing gracefully
+        }
     }
 
     private double toDouble(Object v) {
