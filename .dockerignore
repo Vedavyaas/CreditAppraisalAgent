@@ -1,6 +1,4 @@
 target/
-frontend/
-ml-service/
 uploads/
 cam-reports/
 .git/
