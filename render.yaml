@@ -3,16 +3,17 @@ services:
   - type: web
     name: cam-ml-engine
     env: docker
-    dockerfilePath: ./ml-service/Dockerfile
-    rootDir: .
+    dockerfilePath: Dockerfile
+    rootDir: ./ml-service
     region: ohio
     plan: free
+    healthCheckPath: /health
 
   # 2. Java Backend & Frontend (Spring Boot serving Static Files)
   - type: web
     name: cam-java-backend
     env: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: Dockerfile
     rootDir: .
     region: ohio
     plan: free
@@ -23,29 +24,20 @@ services:
           name: cam-ml-engine
           type: web
           property: url
+      
+      # Database Configuration (External Render Postgres)
       - key: DB_URL
-        fromDatabase:
-          name: cam-postgres
-          property: connectionString
+        value: jdbc:postgresql://dpg-d6o4f74r85hc73din2ug-a:5432/mydb_s5ix
       - key: DB_USERNAME
-        fromDatabase:
-          name: cam-postgres
-          property: user
+        value: mydb_s5ix_user
       - key: DB_PASSWORD
-        fromDatabase:
-          name: cam-postgres
-          property: password
+        value: MBHplYgq4FbJp3tSzusw5fG8AEKxqrQD
       - key: DB_DRIVER
         value: org.postgresql.Driver
       - key: JPA_DDL_AUTO
         value: update
       - key: HIBERNATE_DIALECT
         value: org.hibernate.dialect.PostgreSQLDialect
+      
       - key: JWT_SECRET
         value: kBrEkn/5ZoZJtAAxT5MLMtNcLz7yr+gsbTrWxmEezko3hRf2zuwkpTq1wvPeXkTu
-
-databases:
-  - name: cam-postgres
-    region: ohio
-    plan: free
-
