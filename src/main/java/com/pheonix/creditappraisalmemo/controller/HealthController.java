@@ -7,12 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HealthController {
 
-    @GetMapping("/")
-    public ResponseEntity<String> root() {
-        return ResponseEntity.ok("Welcome to the Phoenix Credit Appraisal Memo API! The service is running securely.");
-    }
-
-    @GetMapping("/health")
+    @GetMapping("/api/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("OK");
     }
