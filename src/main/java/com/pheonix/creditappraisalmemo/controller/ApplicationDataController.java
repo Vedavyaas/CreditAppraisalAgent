@@ -169,9 +169,33 @@ public class ApplicationDataController {
             String assessment = qualitativeParams.containsKey("promoterAssessment") ? qualitativeParams.get("promoterAssessment").toString() : "NEUTRAL";
             boolean legal = qualitativeParams.containsKey("legalConcerns") && Boolean.parseBoolean(qualitativeParams.get("legalConcerns").toString());
             
+            // Dynamic State Vector Calculation strictly from the Database
+            java.util.Optional<WebResearchResult> researchOpt = researchRepo.findByApplicationId(app.getId());
+            java.util.List<BankTransaction> bankTxs = bankRepo.findAll().stream()
+                    .filter(b -> app.getId().equals(b.getApplicationId())).toList();
+            
+            double creditScore = researchOpt.map(r -> r.getCibilScore() != null ? r.getCibilScore().doubleValue() : 700.0).orElse(700.0);
+            double income = app.getTurnover() != null ? app.getTurnover() : 5000000.0;
+            
+            double currentDebt = researchOpt.map(r -> r.getCibilOutstandingLoans() != null ? r.getCibilOutstandingLoans() * 150000.0 : 200000.0).orElse(200000.0);
+            double paymentHistory = researchOpt.map(r -> {
+                if (r.getCibilOutstandingLoans() != null && r.getCibilOutstandingLoans() > 0 && r.getCibilOverdueAccounts() != null) {
+                    return Math.max(0.0, 1.0 - ((double) r.getCibilOverdueAccounts() / r.getCibilOutstandingLoans()));
+                }
+                return 0.9;
+            }).orElse(0.9);
+            
+            double totalCredits = bankTxs.stream().map(BankTransaction::getCredit).filter(java.util.Objects::nonNull).mapToDouble(java.math.BigDecimal::doubleValue).sum();
+            double totalDebits  = bankTxs.stream().map(BankTransaction::getDebit).filter(java.util.Objects::nonNull).mapToDouble(java.math.BigDecimal::doubleValue).sum();
+            
+            double spendingPattern = totalCredits > 0 ? Math.min(totalDebits / totalCredits, 1.0) : 0.6;
+            double creditUtilization = income > 0 ? Math.min(currentDebt / income, 1.0) : 0.4;
+            
+            double macroeconomicConditions = researchOpt.map(r -> r.getSectorGrowthPct() != null ? r.getSectorGrowthPct() / 100.0 : 0.1).orElse(0.1);
+
             PersonaSimulationResult res = mlClientService.simulatePersona(
                 app.getId(), app.getCompanyName(), app.getIndustry(), app.getTurnover(),
-                capacity, assessment, legal);
+                capacity, assessment, legal, creditScore, income, currentDebt, paymentHistory, spendingPattern, creditUtilization, macroeconomicConditions);
              
             if (res == null) return ResponseEntity.internalServerError().<PersonaSimulationResult>build();
             return ResponseEntity.ok(res);

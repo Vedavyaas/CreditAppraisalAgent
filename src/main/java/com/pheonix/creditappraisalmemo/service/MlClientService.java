@@ -292,16 +292,25 @@ public class MlClientService {
     
     /** Call /predict/persona-simulation - Digital Twin Persona */
     @SuppressWarnings("unchecked")
-    public PersonaSimulationResult simulatePersona(Long applicationId, String companyName, String sector, Double turnover, int capacityUtilization, String promoterAssessment, boolean hasLegalConcerns) {
+    public PersonaSimulationResult simulatePersona(Long applicationId, String companyName, String sector, Double turnover, int capacityUtilization, String promoterAssessment, boolean hasLegalConcerns, double creditScore, double income, double currentDebt, double paymentHistory, double spendingPattern, double creditUtilization, double macroeconomicConditions) {
         try {
-            Map<String, Object> body = Map.of(
-                    "application_id", applicationId,
-                    "company_name", companyName != null ? companyName : "Unknown",
-                    "sector", sector != null ? sector : "Unknown",
-                    "turnover", turnover != null ? turnover : 0.0,
-                    "capacity_utilization_pct", capacityUtilization,
-                    "promoter_assessment", promoterAssessment != null ? promoterAssessment : "NEUTRAL",
-                    "has_legal_concerns", hasLegalConcerns
+            Map<String, Object> body = Map.ofEntries(
+                    Map.entry("application_id", applicationId),
+                    Map.entry("company_name", companyName != null ? companyName : "Unknown"),
+                    Map.entry("sector", sector != null ? sector : "Unknown"),
+                    Map.entry("turnover", turnover != null ? turnover : 0.0),
+                    Map.entry("capacity_utilization_pct", capacityUtilization),
+                    Map.entry("promoter_assessment", promoterAssessment != null ? promoterAssessment : "NEUTRAL"),
+                    Map.entry("has_legal_concerns", hasLegalConcerns),
+                    
+                    // Neural Network State Vector
+                    Map.entry("credit_score", creditScore),
+                    Map.entry("income", income),
+                    Map.entry("current_debt", currentDebt),
+                    Map.entry("payment_history", paymentHistory),
+                    Map.entry("spending_pattern", spendingPattern),
+                    Map.entry("credit_utilization", creditUtilization),
+                    Map.entry("macroeconomic_conditions", macroeconomicConditions)
             );
             ResponseEntity<Map> resp = restTemplate.postForEntity(
                     baseUrl() + "/predict/persona-simulation", body, Map.class);
@@ -321,6 +330,13 @@ public class MlClientService {
             entity.setAssuranceAdjustment(toDouble(data.get("assurance_adjustment")));
             entity.setSentiment((String) data.get("sentiment"));
             entity.setSimulatedAt(java.time.LocalDateTime.now());
+            
+            // Map Neural Network Probabilities
+            entity.setProbPayOnTime(toDouble(data.get("p_pay_on_time")));
+            entity.setProbMissPayment(toDouble(data.get("p_miss_payment")));
+            entity.setProbCloseAccount(toDouble(data.get("p_close_account")));
+            entity.setProbIncreaseSpending(toDouble(data.get("p_increase_spending")));
+            entity.setProbDefault(toDouble(data.get("p_default")));
             
             return personaRepository.save(entity);
             

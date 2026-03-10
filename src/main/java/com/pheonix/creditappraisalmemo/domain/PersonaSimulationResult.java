@@ -30,6 +30,12 @@ public class PersonaSimulationResult {
     private String sentiment;
     private LocalDateTime simulatedAt;
 
+    private Double probPayOnTime;
+    private Double probMissPayment;
+    private Double probCloseAccount;
+    private Double probIncreaseSpending;
+    private Double probDefault;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -59,4 +65,19 @@ public class PersonaSimulationResult {
 
     public LocalDateTime getSimulatedAt() { return simulatedAt; }
     public void setSimulatedAt(LocalDateTime simulatedAt) { this.simulatedAt = simulatedAt; }
+
+    public Double getProbPayOnTime() { return probPayOnTime; }
+    public void setProbPayOnTime(Double probPayOnTime) { this.probPayOnTime = probPayOnTime; }
+
+    public Double getProbMissPayment() { return probMissPayment; }
+    public void setProbMissPayment(Double probMissPayment) { this.probMissPayment = probMissPayment; }
+
+    public Double getProbCloseAccount() { return probCloseAccount; }
+    public void setProbCloseAccount(Double probCloseAccount) { this.probCloseAccount = probCloseAccount; }
+
+    public Double getProbIncreaseSpending() { return probIncreaseSpending; }
+    public void setProbIncreaseSpending(Double probIncreaseSpending) { this.probIncreaseSpending = probIncreaseSpending; }
+
+    public Double getProbDefault() { return probDefault; }
+    public void setProbDefault(Double probDefault) { this.probDefault = probDefault; }
 }

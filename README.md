@@ -7,7 +7,7 @@ A full-stack, AI-powered credit underwriting and compliance system designed for 
 ![Deployment](https://img.shields.io/badge/Deployment-Docker_Compose-blueviolet)
 
 ## 🌟 Overview
-The CAM Platform automates the ingestion of GST, Bank, and Financial documents to generate a comprehensive **Credit Appraisal Memo**. It features an intelligent **Compliance Hub** for fraud detection, an **ML-Driven Engine** for risk scoring and revenue forecasting, and an autonomous **Research Agent** for real-time web-based due diligence.
+The CAM Platform automates the ingestion of GST, Bank, and Financial documents to generate a comprehensive **Credit Appraisal Memo**. It features an intelligent **Compliance Hub** for fraud detection, an **ML-Driven Engine** for risk scoring and revenue forecasting, an autonomous **Research Agent** for real-time web-based due diligence, and a state-of-the-art **Cognitive Persona Brain** (Neural Network Automata) that creates a Digital Twin of the borrower to stress-test behavioral resilience.
 
 ## 🏗️ Project Structure
 - **/frontend**: React 19 + Vite (TS) Dashboards featuring a premium Light-Mode Glassmorphism UI.
@@ -32,6 +32,7 @@ docker-compose up --build
 - **ML Docs (Swagger)**: `http://localhost:8000/docs`
 
 ## 💎 Features
+- **Cognitive Persona Brain (Digital Twin)**: A dynamic Neural Network Automata (MLPRegressor) that processes a 7-parameter State Vector (including CIBIL, Income, Debt, Macroeconomics) to predict borrower behavioral probabilities (Default, Pay on Time, etc.) under extreme stress scenarios.
 - **Intelligent Ingestion**: Automated CSV/PDF parsing using Spring Batch robust pipelines.
 - **Fraud Detection**: Scikit-Learn Isolation Forest models detecting circular trading patterns.
 - **Explainable AI Engine**: Comprehensive risk scoring based on the 5 C's of credit, featuring detailed reasoning and qualitative adjustments.

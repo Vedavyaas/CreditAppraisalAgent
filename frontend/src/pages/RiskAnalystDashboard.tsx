@@ -459,6 +459,35 @@ export const RiskAnalystDashboard: React.FC = () => {
                         })}
                     </div>
                 </div>
+
+                <div className="p-4 bg-white border border-slate-200 rounded-xl mt-4">
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center">
+                        <Activity className="w-3.5 h-3.5 mr-1" /> Neural Network Automata — Vector Probability Analysis
+                    </h4>
+                    <div className="space-y-3">
+                        {[
+                            { label: 'P(Pay on Time)', val: personaData.probPayOnTime, color: 'bg-emerald-500' },
+                            { label: 'P(Miss Payment)', val: personaData.probMissPayment, color: 'bg-amber-500' },
+                            { label: 'P(Increase Spending)', val: personaData.probIncreaseSpending, color: 'bg-blue-500' },
+                            { label: 'P(Close Account)', val: personaData.probCloseAccount, color: 'bg-indigo-500' },
+                            { label: 'P(Default)', val: personaData.probDefault, color: 'bg-red-500' }
+                        ].map((prob, i) => {
+                            const pValue = prob.val != null ? prob.val * 100 : 0;
+                            return (
+                                <div key={i} className="flex items-center space-x-4">
+                                    <p className="text-xs font-bold text-slate-700 w-36 uppercase tracking-wider">{prob.label}</p>
+                                    <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full ${prob.color} transition-all duration-1000 ease-out`}
+                                            style={{ width: `${pValue}%` }}
+                                        />
+                                    </div>
+                                    <p className="text-xs font-mono font-black w-12 text-right text-slate-500">{pValue.toFixed(1)}%</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         );
     };

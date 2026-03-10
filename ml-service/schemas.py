@@ -135,6 +135,14 @@ class PersonaSimulationRequest(BaseModel):
     capacity_utilization_pct: int
     promoter_assessment: str
     has_legal_concerns: bool
+    # Customer State Vector for Neural Network Automata
+    credit_score: float
+    income: float
+    current_debt: float
+    payment_history: float
+    spending_pattern: float
+    credit_utilization: float
+    macroeconomic_conditions: float
 
 class SimulatedScenarioResponse(BaseModel):
     scenario_id: str
@@ -149,3 +157,9 @@ class PersonaSimulationResponse(BaseModel):
     behavioral_resilience_score: float
     assurance_adjustment: float
     sentiment: str
+    # Neural Network Output Probabilities
+    p_pay_on_time: float
+    p_miss_payment: float
+    p_close_account: float
+    p_increase_spending: float
+    p_default: float

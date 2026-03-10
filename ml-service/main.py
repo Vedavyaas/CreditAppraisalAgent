@@ -182,7 +182,14 @@ def simulate_persona(req: PersonaSimulationRequest):
             turnover=req.turnover,
             capacity_utilization=req.capacity_utilization_pct,
             promoter_assessment=req.promoter_assessment,
-            legal_concerns=req.has_legal_concerns
+            legal_concerns=req.has_legal_concerns,
+            credit_score=req.credit_score,
+            income=req.income,
+            current_debt=req.current_debt,
+            payment_history=req.payment_history,
+            spending_pattern=req.spending_pattern,
+            credit_utilization=req.credit_utilization,
+            macroeconomic_conditions=req.macroeconomic_conditions
         )
         return PersonaSimulationResponse(application_id=req.application_id, **result)
     except Exception as e:
