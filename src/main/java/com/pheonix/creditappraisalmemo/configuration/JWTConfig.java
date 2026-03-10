@@ -47,7 +47,7 @@ public class JWTConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults()); // Enable CORS
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                .requestMatchers("/api/health", "/h2-console/**", "/api/auth/**").permitAll()
+                .requestMatchers("/", "/api/health", "/h2-console/**", "/api/auth/**").permitAll()
                 .anyRequest().authenticated());
 
         org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter jwtAuthenticationConverter = new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter();

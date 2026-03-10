@@ -16,12 +16,15 @@ services:
     rootDir: .
     region: ohio
     plan: free
+    healthCheckPath: /api/health
     envVars:
       - key: ML_SERVICE_URL
         fromService:
           name: cam-ml-engine
           type: web
           property: url
+      - key: JWT_SECRET
+        value: kBrEkn/5ZoZJtAAxT5MLMtNcLz7yr+gsbTrWxmEezko3hRf2zuwkpTq1wvPeXkTu
 
   # 3. React Frontend Dashboard (Static Site)
   - type: web
@@ -38,7 +41,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: cam-java-backend
-          type: web
-          property: url
+        value: https://cam-java-backend.onrender.com
