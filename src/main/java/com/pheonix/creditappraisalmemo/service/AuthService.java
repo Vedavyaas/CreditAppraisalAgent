@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,6 +21,7 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 public class AuthService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthService.class);
 
     private final UserDetailsRepository userRepo;
     private final PasswordEncoder passwordEncoder;
@@ -59,18 +62,30 @@ public class AuthService {
 
     @AuditAction("System login attempt")
     public AuthResponse login(LoginRequest request) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
-        UserDetailsEntity user = userRepo.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("User not found."));
-        return new AuthResponse(
-            mintToken(auth.getName(), user.getRole().name()), 
-            "Login successful.",
-            user.getId(),
-            user.getEmail(),
-            user.getName(),
-            user.getRole().name()
-        );
+        log.info("AUTH DEBUG: Attempting login for email: {}", request.email());
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+            
+            UserDetailsEntity user = userRepo.findByEmail(request.email())
+                    .orElseThrow(() -> new RuntimeException("User not found after successful authentication."));
+            
+            log.info("AUTH DEBUG: Login successful for: {}", request.email());
+            return new AuthResponse(
+                mintToken(auth.getName(), user.getRole().name()), 
+                "Login successful.",
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getRole().name()
+            );
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            log.error("AUTH DEBUG: Authentication FAILED for email {}: {}", request.email(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("AUTH DEBUG: Unexpected error during login for email {}: {}", request.email(), e.getMessage(), e);
+            throw e;
+        }
     }
     public AuthResponse sendLoginOtp(LoginRequest request) {
         authenticationManager.authenticate(
@@ -116,6 +131,7 @@ public class AuthService {
 
     private String mintToken(String subject, String role) {
         Instant now = Instant.now();
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("CreditAppraisalMemo")
                 .issuedAt(now)
@@ -123,7 +139,7 @@ public class AuthService {
                 .subject(subject)
                 .claim("role", role)
                 .build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }
 
     public java.util.List<UserDetailsEntity> getAllUsers() {

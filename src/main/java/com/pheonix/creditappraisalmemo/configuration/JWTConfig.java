@@ -78,13 +78,29 @@ public class JWTConfig {
 
     /**
      * Builds a stable HMAC-SHA256 SecretKey from the configured jwt.secret.
-     * Unlike RSA key generation, this key is deterministic — the same secret
-     * always produces the same key, so tokens survive service restarts on Render.
+     * Uses a Random UUID if the secret is not provided (EPHEMERAL).
      */
     @Bean
     SecretKey jwtSecretKey() {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
-        return new SecretKeySpec(keyBytes, "HmacSHA256");
+        String finalSecret = jwtSecret;
+        
+        // If the secret is the default-placeholder or null, generate a random UUID
+        if (jwtSecret == null || jwtSecret.startsWith("ZGVmYXVsdC")) {
+            finalSecret = java.util.UUID.randomUUID().toString();
+            // Note: Standard output goes to Render logs for you to see
+            System.out.println("!!! SECURITY ALERT !!!");
+            System.out.println("Using ephemeral UUID-based JWT secret: " + finalSecret);
+            System.out.println("Tokens will be invalidated on application restart.");
+            return new javax.crypto.spec.SecretKeySpec(finalSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256");
+        }
+        
+        try {
+            byte[] keyBytes = Base64.getDecoder().decode(finalSecret);
+            return new SecretKeySpec(keyBytes, "HmacSHA256");
+        } catch (Exception e) {
+            // Fallback for non-base64 strings (like raw UUIDs in env vars)
+            return new SecretKeySpec(finalSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256");
+        }
     }
 
     @Bean

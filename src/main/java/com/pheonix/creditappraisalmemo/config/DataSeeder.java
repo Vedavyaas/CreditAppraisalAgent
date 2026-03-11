@@ -66,15 +66,38 @@ public class DataSeeder implements ApplicationRunner {
     }
 
     @Override
-    @Transactional
     public void run(ApplicationArguments args) {
-        log.info("DataSeeder: checking database state for seeding...");
+        log.info("DataSeeder: starting database seeding process...");
         
-        seedUsers();
-        seedApplications();
-        seedRulesConfig();
+        try {
+            seedUsersInTransaction();
+            seedApplicationsInTransaction();
+            seedRulesConfigInTransaction();
+            log.info("DataSeeder: seeding process complete.");
+        } catch (Exception e) {
+            log.error("DataSeeder: CRITICAL ERROR during seeding! {}", e.getMessage(), e);
+        }
+    }
 
-        log.info("DataSeeder: seeding process complete.");
+    @Transactional
+    public void seedUsersInTransaction() {
+        log.info("DataSeeder: seeding users...");
+        seedUsers();
+        log.info("DataSeeder: users seeded successfully. (Count: {})", userRepo.count());
+    }
+
+    @Transactional
+    public void seedApplicationsInTransaction() {
+        log.info("DataSeeder: seeding applications...");
+        seedApplications();
+        log.info("DataSeeder: applications seeded successfully.");
+    }
+
+    @Transactional
+    public void seedRulesConfigInTransaction() {
+        log.info("DataSeeder: seeding rules config...");
+        seedRulesConfig();
+        log.info("DataSeeder: rules config seeded successfully.");
     }
 
     // ── Application portfolio ─────────────────────────────────────────────────
@@ -505,8 +528,7 @@ public class DataSeeder implements ApplicationRunner {
         config.setMaxAutoApprovalLoanAmount(5_000_000.0);
         config.setCibilCheckRequired(true);
         config.setForceOtpLogin(false);
-        String mlUrl = System.getenv("ML_SERVICE_URL");
-        config.setMlServiceUrl(mlUrl != null ? mlUrl : "http://localhost:8000");
+        config.setMlServiceUrl("http://localhost:8000");
         rulesRepo.save(config);
     }
 }
