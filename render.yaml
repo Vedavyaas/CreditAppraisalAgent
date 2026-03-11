@@ -1,5 +1,15 @@
 services:
-  # 1. Monolithic Service (Java Backend + Frontend + Python ML Engine)
+  # 1. Python ML Service (FastAPI)
+  - type: web
+    name: cam-ml-engine
+    env: docker
+    dockerfilePath: Dockerfile
+    rootDir: ./ml-service
+    region: oregon
+    plan: free
+    healthCheckPath: /health
+
+  # 2. Java Backend & Frontend (Spring Boot serving Static Files)
   - type: web
     name: cam-java-backend
     env: docker
@@ -10,7 +20,7 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: ML_SERVICE_URL
-        value: http://localhost:8000
+        value: https://cam-ml-engine.onrender.com
       
       # Database Configuration (External Render Postgres in Oregon)
       - key: DB_URL
