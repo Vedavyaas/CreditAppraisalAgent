@@ -15,10 +15,9 @@ public class PdfDocumentReader implements ItemReader<Document> {
 
     private final Iterator<Document> iterator;
 
-    public PdfDocumentReader(Long applicationId, DocumentRepository documentRepository) {
-        List<Document> pending = documentRepository
-                .findByApplicationIdAndType(applicationId, Document.DocumentType.ANNUAL_REPORT);
-        // Also include OTHER types that may be PDFs
+    public PdfDocumentReader(Long documentId, DocumentRepository documentRepository) {
+        List<Document> pending = new java.util.ArrayList<>();
+        documentRepository.findById(documentId).ifPresent(pending::add);
         this.iterator = pending.iterator();
     }
 

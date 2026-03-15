@@ -53,7 +53,7 @@ public class IngestJobRouter {
     public Long route(Document document) throws JobExecutionAlreadyRunningException,
             JobRestartException, JobInstanceAlreadyCompleteException, InvalidJobParametersException {
 
-        Job job = pickJob(document.getType());
+        Job job = pickJob(document);
         if (job == null) return null; // unsupported type — skip silently
 
         JobParameters params = new JobParametersBuilder()
@@ -88,9 +88,15 @@ public class IngestJobRouter {
         return execution.getId();
     }
 
-    private Job pickJob(Document.DocumentType type) {
-        if (type == null) return null;
-        switch (type) {
+    private Job pickJob(Document document) {
+        if (document == null || document.getType() == null) return null;
+        
+        // If file is a PDF, ALWAYS use the pdfExtractionJob regardless of Type dropdown
+        if (document.getFilePath() != null && document.getFilePath().toLowerCase().endsWith(".pdf")) {
+            return pdfExtractionJob;
+        }
+
+        switch (document.getType()) {
             case GST_RETURN: 
                 return gstIngestionJob;
             case BANK_STATEMENT: 

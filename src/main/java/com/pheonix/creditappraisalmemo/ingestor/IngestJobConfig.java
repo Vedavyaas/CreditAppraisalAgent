@@ -109,18 +109,19 @@ public class IngestJobConfig {
     @Bean
     public Job pdfExtractionJob() {
         return new JobBuilder("pdfExtractionJob", jobRepository)
-                .start(pdfExtractionStep(null))
+                .start(pdfExtractionStep(null, null))
                 .build();
     }
 
     @Bean
     @JobScope
     public Step pdfExtractionStep(
-            @Value("#{jobParameters['applicationId']}") Long applicationId) {
+            @Value("#{jobParameters['documentId']}") Long documentId,
+            com.pheonix.creditappraisalmemo.service.MlClientService mlClientService) {
         return new StepBuilder("pdfExtractionStep", jobRepository)
                 .<Document, Document>chunk(CHUNK_SIZE, txManager)
-                .reader(new PdfDocumentReader(applicationId, documentRepository))
-                .processor(new PdfItemProcessor())
+                .reader(new PdfDocumentReader(documentId, documentRepository))
+                .processor(new PdfItemProcessor(mlClientService))
                 .writer(new PdfItemWriter(documentRepository))
                 .build();
     }

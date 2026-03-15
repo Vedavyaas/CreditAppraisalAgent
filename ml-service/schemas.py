@@ -163,3 +163,11 @@ class PersonaSimulationResponse(BaseModel):
     p_close_account: float
     p_increase_spending: float
     p_default: float
+
+
+# ── PDF Extraction ───────────────────────────────────────────────────────────
+class PdfExtractionRequest(BaseModel):
+    file_path: str
+
+class PdfExtractionResponse(BaseModel):
+    extracted_text: str

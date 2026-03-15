@@ -31,10 +31,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow Spring Boot to call from localhost
+# Allow Spring Boot to call from localhost and docker internal
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8090", "http://localhost:3000"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -196,4 +196,23 @@ def simulate_persona(req: PersonaSimulationRequest):
         logger.error(f"Persona Simulator error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+import PyPDF2
+from schemas import PdfExtractionRequest, PdfExtractionResponse
 
+@app.post("/extract/pdf", response_model=PdfExtractionResponse)
+def extract_pdf(req: PdfExtractionRequest):
+    """
+    Extracts text from a local PDF file path.
+    """
+    try:
+        text = ""
+        with open(req.file_path, "rb") as f:
+            reader = PyPDF2.PdfReader(f)
+            for page in reader.pages:
+                extracted = page.extract_text()
+                if extracted:
+                    text += extracted + "\n"
+        return PdfExtractionResponse(extracted_text=text)
+    except Exception as e:
+        logger.error(f"PDF Extraction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

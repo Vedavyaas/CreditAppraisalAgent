@@ -1,0 +1,382 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.pheonix:CreditAppraisalMemo >-------------------
+[INFO] Building CreditAppraisalMemo 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:4.0.3:run (default-cli) > test-compile @ CreditAppraisalMemo >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ CreditAppraisalMemo ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ CreditAppraisalMemo ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ CreditAppraisalMemo ---
+[INFO] skip non existing resourceDirectory /Users/vedavyaasmr/IdeaProjects/CreditAppraisalMemo/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ CreditAppraisalMemo ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< spring-boot:4.0.3:run (default-cli) < test-compile @ CreditAppraisalMemo <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:4.0.3:run (default-cli) @ CreditAppraisalMemo ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.3)
+
+2026-03-15T11:59:07.146+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] c.p.c.CreditAppraisalMemoApplication     : Starting CreditAppraisalMemoApplication using Java 24.0.1 with PID 16101 (/Users/vedavyaasmr/IdeaProjects/CreditAppraisalMemo/target/classes started by vedavyaasmr in /Users/vedavyaasmr/IdeaProjects/CreditAppraisalMemo)
+2026-03-15T11:59:07.149+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] c.p.c.CreditAppraisalMemoApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-03-15T11:59:07.405+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-15T11:59:07.432+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 22 ms. Found 14 JPA repository interfaces.
+2026-03-15T11:59:07.685+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8090 (http)
+2026-03-15T11:59:07.689+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-15T11:59:07.689+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-15T11:59:07.705+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 539 ms
+2026-03-15T11:59:07.794+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-15T11:59:07.817+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.4.Final
+2026-03-15T11:59:07.955+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-15T11:59:07.966+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-15T11:59:08.023+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:camdb user=SA
+2026-03-15T11:59:08.024+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-15T11:59:08.033+05:30  WARN 16101 --- [CreditAppraisalMemo] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-03-15T11:59:08.040+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:h2:mem:camdb]
+	Database driver: H2 JDBC Driver
+	Database dialect: H2Dialect
+	Database version: 2.4.240
+	Default catalog/schema: CAMDB/PUBLIC
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: 100
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+Hibernate: 
+    create global temporary table HTE_user_details_entity(rn_ integer not null, suspended boolean default false, id bigint, email varchar(255), name varchar(255), password varchar(255), role enum ('ADMIN', 'COMPLIANCE_OFFICER', 'CREDIT_MANAGER', 'CREDIT_OFFICER', 'RISK_ANALYST', 'VIEWER'), primary key (rn_)) transactional
+Hibernate: 
+    create global temporary table HTE_audit_log_entity(rn_ integer not null, executionTimeMs bigint, id bigint, timestamp timestamp(6), action varchar(255), endpoint varchar(255), message varchar(255), status varchar(255), username varchar(255), primary key (rn_)) transactional
+2026-03-15T11:59:08.437+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table audit_log_entity (
+        id bigint not null,
+        action varchar(255),
+        endpoint varchar(255),
+        execution_time_ms bigint,
+        message varchar(255),
+        status varchar(255),
+        timestamp timestamp(6),
+        username varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table bank_transactions (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        balance numeric(20,2),
+        credit numeric(20,2),
+        debit numeric(20,2),
+        description varchar(255),
+        suspicious_flag boolean not null,
+        transaction_date date,
+        primary key (id)
+    )
+Hibernate: 
+    create table cam_reports (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        generated_at timestamp(6),
+        report_file_name varchar(255),
+        report_path varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table credit_applications (
+        id bigint generated by default as identity,
+        cin varchar(255),
+        city varchar(255),
+        company_name varchar(255) not null,
+        compliance_status varchar(255),
+        created_at timestamp(6),
+        created_by varchar(255) not null,
+        gst_number varchar(255),
+        industry varchar(255),
+        loan_interest float(53),
+        loan_tenure integer,
+        loan_type varchar(255),
+        pan varchar(255),
+        requested_amount float(53) not null,
+        risk_band varchar(255),
+        status enum ('ANALYZING','DECIDED','DRAFT','FRAUD_FLAGGED','IN_REVIEW','PENDING_COMPLIANCE','PENDING_MANAGER','REJECTED') not null,
+        turnover float(53),
+        updated_at timestamp(6),
+        primary key (id)
+    )
+Hibernate: 
+    create table credit_scores (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        capacity integer,
+        capital integer,
+        character integer,
+        collateral integer,
+        computed_at timestamp(6),
+        conditions integer,
+        decision enum ('APPROVE','FURTHER_REVIEW','REJECT'),
+        explainability TEXT,
+        recommended_limit numeric(20,2),
+        recommended_rate numeric(5,2),
+        total_score integer,
+        primary key (id)
+    )
+Hibernate: 
+    create table documents (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        extracted_text TEXT,
+        extraction_status enum ('DONE','FAILED','IN_PROGRESS','PENDING'),
+        file_name varchar(255) not null,
+        file_path varchar(255),
+        type enum ('ALM','ANNUAL_REPORT','BANK_STATEMENT','BOARD_MINUTES','BORROWING_PROFILE','GST_RETURN','LEGAL_NOTICE','OTHER','PORTFOLIO_CUTS','RATING_REPORT','SANCTION_LETTER','SHAREHOLDING_PATTERN') not null,
+        uploaded_at timestamp(6),
+        primary key (id)
+    )
+Hibernate: 
+    create table due_diligence_notes (
+        id bigint generated by default as identity,
+        ai_risk_adjustment float(53),
+        application_id bigint not null,
+        category enum ('FACTORY_VISIT','MANAGEMENT_INTERVIEW','OTHER','PROMOTER_BACKGROUND','SITE_OBSERVATION') not null,
+        created_at timestamp(6),
+        created_by varchar(255),
+        note TEXT not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table gst_entries (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        circular_trading_flag boolean not null,
+        difference numeric(20,2),
+        gstr2a_turnover numeric(20,2),
+        gstr3b_turnover numeric(20,2),
+        period varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table ml_prediction_results (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        assurance_band varchar(255),
+        assurance_confidence float(53),
+        assurance_score float(53),
+        computed_at timestamp(6),
+        decision varchar(255),
+        emi_estimate float(53),
+        forecast_json varchar(255),
+        fraud_probability float(53),
+        fraud_probability_pct varchar(255),
+        growth_rate_pct float(53),
+        is_anomalous boolean,
+        recommendation_tier varchar(255),
+        recommended_max_loan float(53),
+        recommended_tenor_months integer,
+        revenue_trend varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table persona_simulation_result (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        assurance_adjustment float(53),
+        behavioral_resilience_score float(53),
+        cognitive_profile varchar(255),
+        prob_close_account float(53),
+        prob_default float(53),
+        prob_increase_spending float(53),
+        prob_miss_payment float(53),
+        prob_pay_on_time float(53),
+        scenarios_tested_json TEXT,
+        sentiment varchar(255),
+        simulated_at timestamp(6),
+        simulated_pressures_json TEXT,
+        simulated_responses_json TEXT,
+        primary key (id)
+    )
+Hibernate: 
+    create table qualitative_notes (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        capacity_utilization_pct integer,
+        legal_concerns_noted varchar(1000),
+        management_interview_notes varchar(2000),
+        overall_sentiment varchar(255),
+        promoter_assessment varchar(255),
+        qualitative_score_adjustment float(53),
+        site_visit_observations varchar(2000),
+        submitted_at timestamp(6) not null,
+        submitted_by varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table rules_config (
+        id bigint not null,
+        cibil_check_required boolean not null,
+        force_otp_login boolean not null,
+        gst_variance_threshold float(53) not null,
+        max_auto_approval_loan_amount float(53) not null,
+        ml_service_url varchar(255) not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table user_details_entity (
+        id bigint not null,
+        email varchar(255),
+        name varchar(255),
+        password varchar(255),
+        role enum ('ADMIN','COMPLIANCE_OFFICER','CREDIT_MANAGER','CREDIT_OFFICER','RISK_ANALYST','VIEWER'),
+        suspended boolean default false not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table web_research_results (
+        id bigint generated by default as identity,
+        application_id bigint not null,
+        cibil_grade varchar(255),
+        cibil_outstanding_loans integer,
+        cibil_overdue_accounts integer,
+        cibil_score integer,
+        crawl_source varchar(255),
+        crawled_at timestamp(6),
+        dgft_alerts varchar(255),
+        e_courts_case_count integer,
+        litigation_note varchar(500),
+        mca_active boolean not null,
+        mca_cin varchar(255),
+        mca_director_count integer,
+        mca_filing_status varchar(255),
+        mca_paid_up_capital varchar(255),
+        mca_registered_date varchar(255),
+        news_items_json varchar(4000),
+        news_overall_sentiment varchar(255),
+        rbi_policy_note varchar(500),
+        sebi_watchlist boolean not null,
+        sector_growth_pct float(53),
+        sector_headwind varchar(500),
+        sector_name varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists cam_reports 
+       drop constraint if exists UKt510xyfp17ld7vjgqxd19m0th
+Hibernate: 
+    alter table if exists cam_reports 
+       add constraint UKt510xyfp17ld7vjgqxd19m0th unique (application_id)
+Hibernate: 
+    alter table if exists credit_scores 
+       drop constraint if exists UKal7j6x9xkdwv0tpdk9gs5dkn8
+Hibernate: 
+    alter table if exists credit_scores 
+       add constraint UKal7j6x9xkdwv0tpdk9gs5dkn8 unique (application_id)
+Hibernate: 
+    alter table if exists ml_prediction_results 
+       drop constraint if exists UK6vvcalwi0o30i2hi38hof33yi
+Hibernate: 
+    alter table if exists ml_prediction_results 
+       add constraint UK6vvcalwi0o30i2hi38hof33yi unique (application_id)
+Hibernate: 
+    alter table if exists persona_simulation_result 
+       drop constraint if exists UK4vumr7qh9mrxhet1gxoub1b2j
+Hibernate: 
+    alter table if exists persona_simulation_result 
+       add constraint UK4vumr7qh9mrxhet1gxoub1b2j unique (application_id)
+Hibernate: 
+    alter table if exists web_research_results 
+       drop constraint if exists UK5ebt29018mjg7wej8denevoct
+Hibernate: 
+    alter table if exists web_research_results 
+       add constraint UK5ebt29018mjg7wej8denevoct unique (application_id)
+Hibernate: 
+    create sequence audit_log_entity_seq start with 1 increment by 50
+Hibernate: 
+    create sequence user_details_entity_seq start with 1 increment by 50
+2026-03-15T11:59:08.458+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-15T11:59:08.516+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+Hibernate: 
+    select
+        next value 
+    for
+        audit_log_entity_seq
+Hibernate: 
+    insert 
+    into
+        audit_log_entity
+        (action, endpoint, execution_time_ms, message, status, timestamp, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    select
+        next value 
+    for
+        audit_log_entity_seq
+Hibernate: 
+    insert 
+    into
+        audit_log_entity
+        (action, endpoint, execution_time_ms, message, status, timestamp, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        audit_log_entity
+        (action, endpoint, execution_time_ms, message, status, timestamp, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-03-15T11:59:08.867+05:30  WARN 16101 --- [CreditAppraisalMemo] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-15T11:59:08.926+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-03-15T11:59:09.136+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] o.s.b.h.a.H2ConsoleAutoConfiguration     : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:camdb'
+2026-03-15T11:59:09.179+05:30  WARN 16101 --- [CreditAppraisalMemo] [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-03-15T11:59:09.180+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-15T11:59:09.181+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-03-15T11:59:09.182+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-03-15T11:59:09.186+05:30  INFO 16101 --- [CreditAppraisalMemo] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-03-15T11:59:09.189+05:30 ERROR 16101 --- [CreditAppraisalMemo] [           main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8090 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8090 or configure this application to listen on another port.
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.989 s
+[INFO] Finished at: 2026-03-15T11:59:09+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:4.0.3:run (default-cli) on project CreditAppraisalMemo: Process terminated with exit code: 1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

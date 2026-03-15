@@ -1,19 +1,23 @@
 package com.pheonix.creditappraisalmemo.ingestor.pdf;
 
 import com.pheonix.creditappraisalmemo.domain.Document;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
+import com.pheonix.creditappraisalmemo.service.MlClientService;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 
 import java.io.File;
 
 /**
- * Uses Apache PDFBox to extract all text from a PDF file.
+ * Uses Python ML service to extract all text from a PDF file.
  * Marks the document as IN_PROGRESS before processing and DONE after.
  * On failure the document is marked FAILED so downstream can skip/retry.
  */
 public class PdfItemProcessor implements ItemProcessor<Document, Document> {
+
+    private final MlClientService mlClientService;
+
+    public PdfItemProcessor(MlClientService mlClientService) {
+        this.mlClientService = mlClientService;
+    }
 
     @Override
     public Document process(Document doc) {
@@ -26,10 +30,12 @@ public class PdfItemProcessor implements ItemProcessor<Document, Document> {
                 return doc;
             }
 
-            try (PDDocument pdf = Loader.loadPDF(file)) {
-                PDFTextStripper stripper = new PDFTextStripper();
-                String text = stripper.getText(pdf);
-                doc.setExtractedText(text);
+            String text = mlClientService.extractPdf(doc.getFilePath());
+            doc.setExtractedText(text);
+
+            if (text != null && text.startsWith("[ERROR]")) {
+                doc.setExtractionStatus(Document.ExtractionStatus.FAILED);
+            } else {
                 doc.setExtractionStatus(Document.ExtractionStatus.DONE);
             }
         } catch (Exception e) {

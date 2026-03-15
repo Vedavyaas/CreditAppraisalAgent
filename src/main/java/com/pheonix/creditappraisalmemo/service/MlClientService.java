@@ -346,6 +346,23 @@ public class MlClientService {
         }
     }
 
+    /** Call /extract/pdf - Offloads PDF extraction to Python */
+    @SuppressWarnings("unchecked")
+    public String extractPdf(String filePath) {
+        try {
+            Map<String, Object> body = Map.of("file_path", filePath);
+            ResponseEntity<Map> resp = restTemplate.postForEntity(
+                    baseUrl() + "/extract/pdf", body, Map.class);
+            Map<String, Object> data = resp.getBody();
+            if (data != null && data.containsKey("extracted_text")) {
+                return (String) data.get("extracted_text");
+            }
+            return "[ERROR] Missing extracted_text in response";
+        } catch (Exception e) {
+            return "[ERROR] Failed to call ML service for PDF extraction: " + e.getMessage();
+        }
+    }
+
     private double toDouble(Object v) {
         if (v == null) return 0.0;
         return v instanceof Number ? ((Number) v).doubleValue() : 0.0;
