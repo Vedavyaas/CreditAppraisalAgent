@@ -31,7 +31,7 @@ services:
       - key: DB_DRIVER
         value: org.postgresql.Driver
       - key: JPA_DDL_AUTO
-        value: update
+        value: create
       - key: HIBERNATE_DIALECT
         value: org.hibernate.dialect.PostgreSQLDialect
       
